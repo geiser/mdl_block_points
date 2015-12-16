@@ -10,6 +10,13 @@ class block_game_points extends block_base
         $this->title = get_string('title', 'block_game_points');
     }
 
+	public function applicable_formats()
+	{
+        return array(
+            'all'    => true
+        );
+    }
+	
     public function get_content()
 	{
 		global $DB, $USER;
@@ -35,7 +42,13 @@ class block_game_points extends block_base
 			}
 			
 			$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $points->points . '</font></center>';
-			//$this->content->footer = 'Rodapé';
+			
+			// Footer
+			global $COURSE;
+			 
+			$url = new moodle_url('/blocks/game_points/addpointsystem.php', array('blockid' => $this->instance->id, 'courseid' => $this->page->course->id));
+			$this->content->footer = html_writer::link($url, get_string('addpointsystempage', 'block_game_points'));
+			
 		}
 		else // Pagina de um curso
 		{
@@ -59,7 +72,12 @@ class block_game_points extends block_base
 			}
 			
 			$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $points->points . '</font></center>';
-			//$this->content->footer = 'Rodapé';
+			
+			// Footer
+			global $COURSE;
+			 
+			$url = new moodle_url('/blocks/game_points/addpointsystem.php', array('blockid' => $this->instance->id, 'courseid' => $this->page->course->id));
+			$this->content->footer = html_writer::link($url, get_string('addpointsystempage', 'block_game_points'));
 		}
 		
 		return $this->content;
@@ -70,3 +88,5 @@ class block_game_points extends block_base
         return true;
     }
 }
+
+?>

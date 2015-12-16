@@ -2,7 +2,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015120105;
+$plugin->version   = 2015121602;
 $plugin->requires  = 2011120511;
 $plugin->release   = 'Version for Moodle 2.9 onwards';
 $plugin->component = 'block_game_points';
