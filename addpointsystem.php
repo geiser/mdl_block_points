@@ -1,17 +1,17 @@
 <?php
 
-global $DB, $OUTPUT, $PAGE;
+global $DB, $OUTPUT, $PAGE, $USER;
  
 require_once('../../config.php');
 require_once('block_game_points_form.php');
  
 global $DB;
  
-// Check for all required variables.
+// Required variables
 $courseid = required_param('courseid', PARAM_INT);
 $blockid = required_param('blockid', PARAM_INT);
  
-// Next look for optional variables.
+// Optional variables
 $id = optional_param('id', 0, PARAM_INT);
  
 if (!$course = $DB->get_record('course', array('id' => $courseid))) {
@@ -41,7 +41,12 @@ else if($data = $addform->get_data())
 	$record->type = $data->type;
 	$record->conditionpoints = $data->event;
 	$record->valuepoints = $data->value;
-	$DB->insert_record('points_system', $record);
+	$psid = $DB->insert_record('points_system', $record);
+	
+	$record = new stdClass();
+	$record->pointsystemid = $psid;
+	$record->processorid = $USER->id;
+	$DB->insert_record('points_system_processor', $record);
 	
     $url = new moodle_url('/my/index.php');
     redirect($url);

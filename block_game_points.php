@@ -46,9 +46,6 @@ class block_game_points extends block_base
 			// Footer
 			global $COURSE;
 			 
-			$url = new moodle_url('/blocks/game_points/addpointsystem.php', array('blockid' => $this->instance->id, 'courseid' => $this->page->course->id));
-			$this->content->footer = html_writer::link($url, get_string('addpointsystempage', 'block_game_points'));
-			
 		}
 		else // Pagina de um curso
 		{
@@ -76,8 +73,6 @@ class block_game_points extends block_base
 			// Footer
 			global $COURSE;
 			 
-			$url = new moodle_url('/blocks/game_points/addpointsystem.php', array('blockid' => $this->instance->id, 'courseid' => $this->page->course->id));
-			$this->content->footer = html_writer::link($url, get_string('addpointsystempage', 'block_game_points'));
 		}
 		
 		return $this->content;
