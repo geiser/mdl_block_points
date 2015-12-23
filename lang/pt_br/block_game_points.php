@@ -8,3 +8,5 @@ $string['title'] = 'Pontos';
 $string['addpointsystemheading'] = 'Adicionar sistema de pontos';
 $string['addpointsystempage'] = 'Adição de sistema de pontos';
 $string['gamepointssettings'] = 'Configurações do bloco pontos';
+$string['editpointsystempage'] = 'Edição de sistemas de pontos';
+$string['editpointsystemheading'] = 'Editar sistemas de pontos';
