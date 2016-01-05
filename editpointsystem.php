@@ -37,12 +37,26 @@ if($addform->is_cancelled())
 }
 else if($data = $addform->get_data())
 {
+	$oldpointsystem = $DB->get_record('points_system', array('id' => $pointsystemid));
+	
 	$record = new stdClass();
-	$record->id = $pointsystemid;
+	$record->id = $oldpointsystem->id;
+	$record->type = $oldpointsystem->type;
+	$record->conditionpoints = $oldpointsystem->conditionpoints;
+	$record->valuepoints = $oldpointsystem->valuepoints;
+	$record->deleted = 1;
+	$DB->update_record('points_system', $record);
+	
+	$record = new stdClass();
 	$record->type = $data->type;
 	$record->conditionpoints = $data->event;
 	$record->valuepoints = $data->value;
-	$DB->update_record('points_system', $record);
+	$psid = $DB->insert_record('points_system', $record);
+	
+	$record = new stdClass();
+	$record->pointsystemid = $psid;
+	$record->processorid = $USER->id;
+	$DB->insert_record('points_system_processor', $record);
 	
     $url = new moodle_url('/my/index.php');
     redirect($url);

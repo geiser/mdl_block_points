@@ -26,7 +26,7 @@ class block_game_points_edit_form extends block_edit_form {
 				$eventsarray[$value['eventname']] = $description[0] . " (" . $value['eventname'] . ")";
 			}
 			
-			$points_systems = $DB->get_records('points_system');
+			$points_systems = $DB->get_records('points_system', array('deleted' => 0));
 			$html = '<table><tr><th>ID</th><th>Tipo</th><th>Condições</th><th>Valor</th><th>Editar</th></tr>';
 			foreach($points_systems as $value)
 			{

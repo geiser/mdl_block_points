@@ -13,7 +13,7 @@ class block_game_points_helper {
 		
 		$satisfies_conditions = true;
 		
-		$pss = $DB->get_records('points_system', array('conditionpoints' => $event->eventname));
+		$pss = $DB->get_records('points_system', array('conditionpoints' => $event->eventname, 'deleted' => 0));
 		foreach($pss as $pointsystem)
 		{
 			if($pointsystem != false)
