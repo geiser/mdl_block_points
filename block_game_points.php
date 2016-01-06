@@ -44,8 +44,75 @@ class block_game_points extends block_base
 			$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $points->points . '</font></center>';
 			
 			// Footer
-			global $COURSE;
-			 
+			$pss = null;
+			if(is_null($this->page->cm->modname))
+			{
+				$pss = $DB->get_records('points_system', array('deleted' => 0));
+			}
+			else
+			{
+				$sql = "SELECT *
+				FROM
+					{points_system} p
+				WHERE p.deleted = 0
+					AND p.conditionpoints LIKE '%" . $this->page->cm->modname . "%'";
+				
+				$pss = $DB->get_records_sql($sql);
+			}
+			if(!empty($pss))
+			{
+				$pointslist = '';
+				
+				$eventslist = report_eventlist_list_generator::get_non_core_event_list();
+				$eventsarray = array();
+				foreach($eventslist as $value)
+				{
+					$description = explode("\\", explode(".", strip_tags($value['fulleventname']))[0]);
+					$eventsarray[$value['eventname']] = $description[0];
+				}
+				
+				foreach($pss as $pointsystem)
+				{
+					if($pointsystem->type == 'random')
+					{
+						$points = $pointsystem->valuepoints;
+					}
+					else if($pointsystem->type == 'fixed')
+					{
+						$points = $pointsystem->valuepoints;
+					}
+					else if($pointsystem->type == 'unique')
+					{
+						if($DB->count_records('points_log', array('pointsystemid' => $pointsystem->id)) == 0)
+						{
+							$points = $pointsystem->valuepoints;
+						}
+						else
+						{
+							$points = 0;
+						}
+					}
+					else if($pointsystem->type == 'scalar')
+					{
+						$times = $DB->count_records('points_log', array('pointsystemid' => $pointsystem->id));
+						$pointsystem->valuepoints = str_replace('x', (string)$times, $pointsystem->valuepoints);
+						eval('$points = ' . $pointsystem->valuepoints . ';');
+						$points = (int)$points;
+					}
+					
+					if($points != 0)
+					{
+						$pointslist = $pointslist . '<li>' . $points . ' pontos por ' . $eventsarray[$pointsystem->conditionpoints] . '</li>';
+					}
+					
+				}
+				
+				if(strlen($pointslist) > 0)
+				{
+					$this->content->footer = 'Você pode ganhar:<ul>' . $pointslist . '</ul>';
+				}
+				
+			}
 		}
 		else // Pagina de um curso
 		{
@@ -71,7 +138,75 @@ class block_game_points extends block_base
 			$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $points->points . '</font></center>';
 			
 			// Footer
-			global $COURSE;
+			$pss = null;
+			if(is_null($this->page->cm->modname))
+			{
+				$pss = $DB->get_records('points_system', array('deleted' => 0));
+			}
+			else
+			{
+				$sql = "SELECT *
+				FROM
+					{points_system} p
+				WHERE p.deleted = 0
+					AND p.conditionpoints LIKE '%" . $this->page->cm->modname . "%'";
+				
+				$pss = $DB->get_records_sql($sql);
+			}
+			if(!empty($pss))
+			{
+				$pointslist = '';
+				
+				$eventslist = report_eventlist_list_generator::get_non_core_event_list();
+				$eventsarray = array();
+				foreach($eventslist as $value)
+				{
+					$description = explode("\\", explode(".", strip_tags($value['fulleventname']))[0]);
+					$eventsarray[$value['eventname']] = $description[0];
+				}
+				
+				foreach($pss as $pointsystem)
+				{
+					if($pointsystem->type == 'random')
+					{
+						$points = $pointsystem->valuepoints;
+					}
+					else if($pointsystem->type == 'fixed')
+					{
+						$points = $pointsystem->valuepoints;
+					}
+					else if($pointsystem->type == 'unique')
+					{
+						if($DB->count_records('points_log', array('pointsystemid' => $pointsystem->id)) == 0)
+						{
+							$points = $pointsystem->valuepoints;
+						}
+						else
+						{
+							$points = 0;
+						}
+					}
+					else if($pointsystem->type == 'scalar')
+					{
+						$times = $DB->count_records('points_log', array('pointsystemid' => $pointsystem->id));
+						$pointsystem->valuepoints = str_replace('x', (string)$times, $pointsystem->valuepoints);
+						eval('$points = ' . $pointsystem->valuepoints . ';');
+						$points = (int)$points;
+					}
+					
+					if($points != 0)
+					{
+						$pointslist = $pointslist . '<li>' . $points . ' pontos por ' . $eventsarray[$pointsystem->conditionpoints] . '</li>';
+					}
+					
+				}
+				
+				if(strlen($pointslist) > 0)
+				{
+					$this->content->footer = 'Você pode ganhar:<ul>' . $pointslist . '</ul>';
+				}
+				
+			}
 			 
 		}
 		
