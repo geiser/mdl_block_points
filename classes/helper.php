@@ -7,9 +7,9 @@ class block_game_points_helper {
     public static function observer(\core\event\base $event) {
         global $DB;
 
-        /*if (!self::is_student($event->relateduserid)) {
+        if(!self::is_student($event->userid)) {
             return;
-        }*/
+        }
 		
 		$satisfies_conditions = true;
 		
