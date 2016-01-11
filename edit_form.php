@@ -4,7 +4,7 @@ class block_game_points_edit_form extends block_edit_form {
  
     protected function specific_definition($mform)
 	{
- 		global $COURSE, $DB;
+ 		global $COURSE, $DB, $USER;
  
 		$context = context_course::instance($COURSE->id);
 		if(has_capability('block/game_points:addpointsystem', $context))
@@ -26,7 +26,14 @@ class block_game_points_edit_form extends block_edit_form {
 				$eventsarray[$value['eventname']] = $description[0] . " (" . $value['eventname'] . ")";
 			}
 			
-			$points_systems = $DB->get_records('points_system', array('deleted' => 0));
+			$sql = "SELECT *
+				FROM {points_system} s
+					INNER JOIN {points_system_processor} p ON s.id = p.pointsystemid
+				WHERE p.processorid = :processorid
+					AND s.deleted = 0";
+			$params['processorid'] = $USER->id;
+			$points_systems = $DB->get_records_sql($sql, $params);
+			
 			$html = '<table><tr><th>ID</th><th>Tipo</th><th>Condições</th><th>Valor</th><th>Editar</th><th>Remover</th></tr>';
 			foreach($points_systems as $value)
 			{
