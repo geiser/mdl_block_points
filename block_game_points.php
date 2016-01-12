@@ -2,6 +2,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot.'/blocks/game_points/classes/helper.php');
+
 class block_game_points extends block_base
 {
 
@@ -143,6 +145,18 @@ class block_game_points extends block_base
 			 
 			}
 			 
+		}
+		
+		$last_points = block_game_points_helper::get_last_points($USER->id);
+		if(!empty($last_points))
+		{
+			$lastpointslist = '';
+			foreach($last_points as $lp)
+			{
+				$eventdescription = is_null($lp->description) ? $lp->eventname : $lp->description;
+				$lastpointslist = $lastpointslist . '<li>' . $lp->points . ' pontos por ' . $eventdescription . '</li>';
+			}
+			$this->content->footer = $this->content->footer . 'Você ganhou:<ul>' . $lastpointslist . '</ul>';
 		}
 		
 		return $this->content;

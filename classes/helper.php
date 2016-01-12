@@ -4,15 +4,35 @@ defined('MOODLE_INTERNAL') || die();
 
 class block_game_points_helper {
 
-    public static function observer(\core\event\base $event) {
-        global $DB;
+	private static $last_points = array();
+	
+	public static function get_last_points($userid)
+	{
+		$return = block_game_points_helper::$last_points[$userid];
+		block_game_points_helper::$last_points[$userid] = null;
+		return $return;
+	}
+	
+	public static function add_last_points($userid, $info)
+	{
+		if(empty(block_game_points_helper::$last_points[$userid]))
+		{
+			block_game_points_helper::$last_points[$userid] = array();
+		}
+		block_game_points_helper::$last_points[$userid][] = $info;
+	}
 
-        if(!self::is_student($event->userid)) {
+    public static function observer(\core\event\base $event)
+	{
+        global $DB;
+		
+        if(!block_game_points_helper::is_student($event->userid)) {
             return;
         }
 		
 		$satisfies_conditions = true;
-		
+		$totalpoints = 0;
+				
 		$pss = $DB->get_records('points_system', array('conditionpoints' => $event->eventname, 'deleted' => 0));
 		foreach($pss as $pointsystem)
 		{
@@ -89,7 +109,14 @@ class block_game_points_helper {
 			$record->pointsystemid = $pointsystem->id;
 			$record->points = $points;
 			$DB->insert_record('points_log', $record);
+			
+			$info = new stdClass();
+			$info->points = $points;
+			$info->description = $pointsystem->eventdescription;
+			$info->eventname = $event->eventname;
+			block_game_points_helper::add_last_points($event->userid, $info);
 		}
+		
     }
 
     protected static function is_student($userid) {
