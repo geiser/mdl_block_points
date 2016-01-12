@@ -42,7 +42,11 @@ class block_game_points_editps_form extends moodleform {
 		$select->setSelected($pointsystem->conditionpoints);
 		
 		$mform->addElement('text', 'value', 'Valor<br><font size="1"><p align="right">Randômico: [min]-[max]<br>Fixo: [valor]<br>Único: [valor]<br>Escalar: função matemática em que x é o número<br>de vezes que o usuário realizou a ação</font></right>');
+		$mform->addRule('value', null, 'required', null, 'client');
 		$mform->setDefault('value', $pointsystem->valuepoints);
+		
+		$mform->addElement('text', 'description', 'Descrição');
+		$mform->setDefault('description', $pointsystem->eventdescription);
 		
 		$mform->addElement('hidden', 'courseid');
 		$mform->addElement('hidden', 'pointsystemid');

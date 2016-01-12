@@ -128,7 +128,8 @@ class block_game_points extends block_base
 						
 						if($points != 0)
 						{
-							$pointslist = $pointslist . '<li>' . $points . ' pontos por ' . $eventsarray[$pointsystem->conditionpoints] . '</li>';
+							$eventdescription = is_null($pointsystem->eventdescription) ? $eventsarray[$pointsystem->conditionpoints] : $pointsystem->eventdescription;
+							$pointslist = $pointslist . '<li>' . $points . ' pontos por ' . $eventdescription . '</li>';
 						}
 						
 					}
