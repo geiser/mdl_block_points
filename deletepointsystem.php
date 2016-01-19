@@ -44,6 +44,7 @@ else if($data = $addform->get_data())
 	$record->type = $oldpointsystem->type;
 	$record->conditionpoints = $oldpointsystem->conditionpoints;
 	$record->valuepoints = $oldpointsystem->valuepoints;
+	$record->blockinstanceid = $oldpointsystem->blockinstanceid;
 	$record->deleted = 1;
 	$DB->update_record('points_system', $record);
 	

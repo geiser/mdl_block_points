@@ -30,8 +30,10 @@ class block_game_points_edit_form extends block_edit_form {
 				FROM {points_system} s
 					INNER JOIN {points_system_processor} p ON s.id = p.pointsystemid
 				WHERE p.processorid = :processorid
+					AND s.blockinstanceid = :blockinstanceid
 					AND s.deleted = 0";
 			$params['processorid'] = $USER->id;
+			$params['blockinstanceid'] = $this->block->instance->id;
 			$points_systems = $DB->get_records_sql($sql, $params);
 			
 			$html = '<table><tr><th>ID</th><th>Tipo</th><th>Condições</th><th>Valor</th><th>Descrição</th><th>Editar</th><th>Remover</th></tr>';
@@ -41,7 +43,7 @@ class block_game_points_edit_form extends block_edit_form {
 				$urlremove = new moodle_url('/blocks/game_points/deletepointsystem.php', array('courseid' => $COURSE->id, 'pointsystemid' => $value->id));
 				$html = $html . '<tr><td>' . $value->id . '</td><td>' . $typesarray[$value->type] . '</td><td>' . $eventsarray[$value->conditionpoints] . '</td><td>' . $value->valuepoints . '</td><td>' . $value->eventdescription . '</td><td>' . html_writer::link($urledit, 'Editar') . '</td><td>' . html_writer::link($urlremove, 'Remover') . '</td></tr>';
 			}
-			$url = new moodle_url('/blocks/game_points/addpointsystem.php', array('blockid' => $this->instance->id, 'courseid' => $COURSE->id));
+			$url = new moodle_url('/blocks/game_points/addpointsystem.php', array('blockid' => $this->block->instance->id, 'courseid' => $COURSE->id));
 			$html = $html . '</table>' . html_writer::link($url, get_string('addpointsystempage', 'block_game_points'));
 			$mform->addElement('html', $html);
 			

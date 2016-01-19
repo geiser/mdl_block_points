@@ -30,10 +30,13 @@ class block_game_points extends block_base
 				FROM
 					{points_log} p
 				INNER JOIN {logstore_standard_log} l ON p.logid = l.id
+				INNER JOIN {points_system} s ON p.pointsystemid = s.id
 				WHERE l.userid = :userid
+					AND s.blockinstanceid = :blockinstanceid
 				GROUP BY l.userid";	
 
 			$params['userid'] = $USER->id;
+			$params['blockinstanceid'] = $this->instance->id;
 
 			$points = $DB->get_record_sql($sql, $params);
 			
@@ -52,12 +55,15 @@ class block_game_points extends block_base
 				FROM
 					{points_log} p
 				INNER JOIN {logstore_standard_log} l ON p.logid = l.id
+				INNER JOIN {points_system} s ON p.pointsystemid = s.id
 				WHERE l.userid = :userid
 					AND l.courseid = :courseid
+					AND s.blockinstanceid = :blockinstanceid
 				GROUP BY l.userid";	
 
 			$params['userid'] = $USER->id;
 			$params['courseid'] = $this->page->course->id;
+			$params['blockinstanceid'] = $this->instance->id;
 
 			$points = $DB->get_record_sql($sql, $params);
 			
@@ -75,7 +81,7 @@ class block_game_points extends block_base
 				$pss = null;
 				if(is_null($this->page->cm->modname))
 				{
-					$pss = $DB->get_records('points_system', array('deleted' => 0));
+					$pss = $DB->get_records('points_system', array('deleted' => 0, 'blockinstanceid' => $this->instance->id));
 				}
 				else
 				{
@@ -83,6 +89,7 @@ class block_game_points extends block_base
 					FROM
 						{points_system} p
 					WHERE p.deleted = 0
+						AND p.blockinstanceid = " . $this->instance->id . "
 						AND p.conditionpoints LIKE '%" . $this->page->cm->modname . "%'";
 					
 					$pss = $DB->get_records_sql($sql);
