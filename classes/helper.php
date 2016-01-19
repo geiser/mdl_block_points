@@ -49,7 +49,17 @@ class block_game_points_helper {
 			}
 			else if($pointsystem->type == 'unique')
 			{
-				if($DB->count_records('points_log', array('pointsystemid' => $pointsystem->id)) == 0)
+				$sql = "SELECT count(p.id)
+					FROM {points_log} p
+						INNER JOIN {logstore_standard_log} l ON p.logid = l.id
+					WHERE l.userid = :userid
+						AND p.pointsystemid = :pointsystemid
+					GROUP BY l.userid";
+				$params['userid'] = $event->userid;
+				$params['pointsystemid'] = $pointsystem->id;
+				
+				//if($DB->count_records('points_log', array('pointsystemid' => $pointsystem->id)) == 0)
+				if($DB->count_records_sql($sql, $params) == 0)
 				{
 					$points = $pointsystem->valuepoints;
 				}
@@ -60,13 +70,27 @@ class block_game_points_helper {
 			}
 			else if($pointsystem->type == 'scalar')
 			{
-				$times = $DB->count_records('points_log', array('pointsystemid' => $pointsystem->id));
+				$sql = "SELECT count(p.id)
+					FROM {points_log} p
+						INNER JOIN {logstore_standard_log} l ON p.logid = l.id
+					WHERE l.userid = :userid
+						AND p.pointsystemid = :pointsystemid
+					GROUP BY l.userid";
+				$params['userid'] = $event->userid;
+				$params['pointsystemid'] = $pointsystem->id;
+				
+				//$times = $DB->count_records('points_log', array('pointsystemid' => $pointsystem->id)) + 1;
+				$times = $DB->count_records($sql, $params) + 1;
 				$pointsystem->valuepoints = str_replace('x', (string)$times, $pointsystem->valuepoints);
 				eval('$points = ' . $pointsystem->valuepoints . ';');
 				$points = (int)$points;
+				if($points < 0)
+				{
+					$points = 0;
+				}
 			}
 			
-			if($points == 0)
+			if($points <= 0 && $pointsystem->type != 'scalar')
 			{
 				return;
 			}
