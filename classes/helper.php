@@ -4,34 +4,13 @@ defined('MOODLE_INTERNAL') || die();
 
 class block_game_points_helper {
 
-	private static $last_points = array();
-	
-	public static function get_last_points($userid)
-	{
-		$return = block_game_points_helper::$last_points[$userid];
-		block_game_points_helper::$last_points[$userid] = null;
-		return $return;
-	}
-	
-	public static function add_last_points($userid, $info)
-	{
-		if(empty(block_game_points_helper::$last_points[$userid]))
-		{
-			block_game_points_helper::$last_points[$userid] = array();
-		}
-		block_game_points_helper::$last_points[$userid][] = $info;
-	}
-
-    public static function observer(\core\event\base $event)
+	public static function observer(\core\event\base $event)
 	{
         global $DB;
 		
         if(!block_game_points_helper::is_student($event->userid)) {
             return;
         }
-		
-		$satisfies_conditions = true;
-		$totalpoints = 0;
 				
 		$pss = $DB->get_records('points_system', array('conditionpoints' => $event->eventname, 'deleted' => 0));
 		foreach($pss as $pointsystem)
@@ -53,12 +32,10 @@ class block_game_points_helper {
 					FROM {points_log} p
 						INNER JOIN {logstore_standard_log} l ON p.logid = l.id
 					WHERE l.userid = :userid
-						AND p.pointsystemid = :pointsystemid
-					GROUP BY l.userid";
+						AND p.pointsystemid = :pointsystemid";
 				$params['userid'] = $event->userid;
 				$params['pointsystemid'] = $pointsystem->id;
 				
-				//if($DB->count_records('points_log', array('pointsystemid' => $pointsystem->id)) == 0)
 				if($DB->count_records_sql($sql, $params) == 0)
 				{
 					$points = $pointsystem->valuepoints;
@@ -74,13 +51,11 @@ class block_game_points_helper {
 					FROM {points_log} p
 						INNER JOIN {logstore_standard_log} l ON p.logid = l.id
 					WHERE l.userid = :userid
-						AND p.pointsystemid = :pointsystemid
-					GROUP BY l.userid";
+						AND p.pointsystemid = :pointsystemid";
 				$params['userid'] = $event->userid;
 				$params['pointsystemid'] = $pointsystem->id;
 				
-				//$times = $DB->count_records('points_log', array('pointsystemid' => $pointsystem->id)) + 1;
-				$times = $DB->count_records($sql, $params) + 1;
+				$times = $DB->count_records_sql($sql, $params) + 1;
 				$pointsystem->valuepoints = str_replace('x', (string)$times, $pointsystem->valuepoints);
 				eval('$points = ' . $pointsystem->valuepoints . ';');
 				$points = (int)$points;
@@ -134,11 +109,6 @@ class block_game_points_helper {
 			$record->points = $points;
 			$DB->insert_record('points_log', $record);
 			
-			$info = new stdClass();
-			$info->points = $points;
-			$info->description = $pointsystem->eventdescription;
-			$info->eventname = $event->eventname;
-			block_game_points_helper::add_last_points($event->userid, $info);
 		}
 		
     }

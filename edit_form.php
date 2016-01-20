@@ -11,6 +11,14 @@ class block_game_points_edit_form extends block_edit_form {
 		{
 			$mform->addElement('header', 'configheader', get_string('editpointsystempage', 'block_game_points'));
 			
+			$mform->addElement('text', 'config_title', 'Título do bloco');
+			$mform->setType('config_title', PARAM_TEXT);
+			
+			$mform->addElement('select', 'config_lastpointsnumber', 'Número de últimas pontuações exibidas', array(0, 1, 2, 3, 4, 5, 6), null);
+			$mform->addRule('config_lastpointsnumber', null, 'required', null, 'client');
+			$mform->setDefault('config_lastpointsnumber', 1);
+			$mform->setType('config_lastpointsnumber', PARAM_TEXT);
+			
 			$typesarray = array(
 				'random' => 'Randômico',
 				'fixed' => 'Fixo',

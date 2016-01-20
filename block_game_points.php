@@ -78,6 +78,14 @@ class block_game_points extends block_base
 			// Footer
 			if(user_has_role_assignment($USER->id, 5))
 			{
+				$eventslist = report_eventlist_list_generator::get_non_core_event_list();
+				$eventsarray = array();
+				foreach($eventslist as $value)
+				{
+					$description = explode("\\", explode(".", strip_tags($value['fulleventname']))[0]);
+					$eventsarray[$value['eventname']] = $description[0];
+				}
+				
 				$pss = null;
 				if(is_null($this->page->cm->modname))
 				{
@@ -97,15 +105,7 @@ class block_game_points extends block_base
 				if(!empty($pss))
 				{
 					$pointslist = '';
-					
-					$eventslist = report_eventlist_list_generator::get_non_core_event_list();
-					$eventsarray = array();
-					foreach($eventslist as $value)
-					{
-						$description = explode("\\", explode(".", strip_tags($value['fulleventname']))[0]);
-						$eventsarray[$value['eventname']] = $description[0];
-					}
-					
+										
 					foreach($pss as $pointsystem)
 					{
 						if($pointsystem->type == 'random')
@@ -122,8 +122,7 @@ class block_game_points extends block_base
 								FROM {points_log} p
 									INNER JOIN {logstore_standard_log} l ON p.logid = l.id
 								WHERE l.userid = :userid
-									AND p.pointsystemid = :pointsystemid
-								GROUP BY l.userid";
+									AND p.pointsystemid = :pointsystemid";
 							$params['userid'] = $USER->id;
 							$params['pointsystemid'] = $pointsystem->id;
 							
@@ -142,12 +141,11 @@ class block_game_points extends block_base
 								FROM {points_log} p
 									INNER JOIN {logstore_standard_log} l ON p.logid = l.id
 								WHERE l.userid = :userid
-									AND p.pointsystemid = :pointsystemid
-								GROUP BY l.userid";
+									AND p.pointsystemid = :pointsystemid";
 							$params['userid'] = $USER->id;
 							$params['pointsystemid'] = $pointsystem->id;
 							
-							$times = $DB->count_records($sql, $params) + 1;
+							$times = $DB->count_records_sql($sql, $params) + 1;
 							$pointsystem->valuepoints = str_replace('x', (string)$times, $pointsystem->valuepoints);
 							eval('$points = ' . $pointsystem->valuepoints . ';');
 							$points = (int)$points;
@@ -167,26 +165,69 @@ class block_game_points extends block_base
 					}
 					
 				}
+				
+				if(isset($this->config))
+				{
+					$lastpointsnumber = isset($this->config->lastpointsnumber) ? $this->config->lastpointsnumber : 1;
+				}
+				else
+				{
+					$lastpointsnumber = 0;
+				}
+				
+				if($lastpointsnumber > 0)
+				{
+					$sql = "SELECT p.id as id, p.points as points, s.eventdescription as eventdescription, s.conditionpoints as conditionpoints
+						FROM
+							{points_log} p
+						INNER JOIN {logstore_standard_log} l ON p.logid = l.id
+						INNER JOIN {points_system} s ON p.pointsystemid = s.id
+						WHERE l.userid = :userid
+							AND l.courseid = :courseid
+							AND s.blockinstanceid = :blockinstanceid
+							AND p.points > 0
+						ORDER BY p.id DESC";	
+
+					$params['userid'] = $USER->id;
+					$params['courseid'] = $this->page->course->id;
+					$params['blockinstanceid'] = $this->instance->id;
+
+					$lastpoints = $DB->get_records_sql($sql, $params, 0, isset($this->config->lastpointsnumber) ? $this->config->lastpointsnumber : 1);
+					
+					if(!empty($lastpoints))
+					{
+						$lastpointslist = '';
+						foreach($lastpoints as $lp)
+						{
+							$eventdescription = is_null($lp->eventdescription) ? $eventsarray[$lp->conditionpoints] : $lp->eventdescription;
+							$lastpointslist = $lastpointslist . '<li>' . $lp->points . ' pontos por ' . $eventdescription . '</li>';
+						}
+						$this->content->footer = $this->content->footer . 'Você ganhou recentemente:<ul>' . $lastpointslist . '</ul>';
+					}
+				}
 			 
 			}
 			 
-		}
-		
-		$last_points = block_game_points_helper::get_last_points($USER->id);
-		if(!empty($last_points))
-		{
-			$lastpointslist = '';
-			foreach($last_points as $lp)
-			{
-				$eventdescription = is_null($lp->description) ? $lp->eventname : $lp->description;
-				$lastpointslist = $lastpointslist . '<li>' . $lp->points . ' pontos por ' . $eventdescription . '</li>';
-			}
-			$this->content->footer = $this->content->footer . 'Você ganhou:<ul>' . $lastpointslist . '</ul>';
 		}
 		
 		return $this->content;
     }
 
+	public function specialization()
+	{
+		if(isset($this->config))
+		{
+			if(empty($this->config->title))
+			{
+				$this->title = get_string('title', 'block_game_points');            
+			}
+			else
+			{
+				$this->title = $this->config->title;
+			}
+		}
+	}
+	
     public function has_config()
 	{
         return true;
