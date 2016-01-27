@@ -19,6 +19,11 @@ class block_game_points extends block_base
         );
     }
 	
+	public function instance_allow_multiple()
+	{
+	  return true;
+	}
+	
     public function get_content()
 	{
 		global $DB, $USER;
@@ -177,7 +182,7 @@ class block_game_points extends block_base
 				
 				if($lastpointsnumber > 0)
 				{
-					$sql = "SELECT p.id as id, p.points as points, s.eventdescription as eventdescription, s.conditionpoints as conditionpoints
+					/*$sql = "SELECT p.id as id, p.points as points, s.eventdescription as eventdescription, s.conditionpoints as conditionpoints
 						FROM
 							{points_log} p
 						INNER JOIN {logstore_standard_log} l ON p.logid = l.id
@@ -186,7 +191,17 @@ class block_game_points extends block_base
 							AND l.courseid = :courseid
 							AND s.blockinstanceid = :blockinstanceid
 							AND p.points > 0
-						ORDER BY p.id DESC";	
+						ORDER BY p.id DESC";*/
+					$sql = "SELECT p.logid as logid, sum(p.points) as points, s.eventdescription as eventdescription, s.conditionpoints as conditionpoints
+						FROM {points_log} p
+						INNER JOIN {logstore_standard_log} l ON p.logid = l.id
+						INNER JOIN {points_system} s ON p.pointsystemid = s.id
+						WHERE l.userid = :userid
+							AND l.courseid = :courseid
+							AND s.blockinstanceid = :blockinstanceid
+							AND p.points > 0
+                        GROUP BY p.logid
+						ORDER BY p.logid DESC";
 
 					$params['userid'] = $USER->id;
 					$params['courseid'] = $this->page->course->id;
