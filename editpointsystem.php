@@ -45,6 +45,7 @@ else if($data = $addform->get_data())
 	$record->conditionpoints = $oldpointsystem->conditionpoints;
 	$record->valuepoints = $oldpointsystem->valuepoints;
 	$record->eventdescription = $oldpointsystem->eventdescription;
+	$record->pointslimit = $oldpointsystem->pointslimit;
 	$record->blockinstanceid = $oldpointsystem->blockinstanceid;
 	$record->deleted = 1;
 	$DB->update_record('points_system', $record);
@@ -54,6 +55,7 @@ else if($data = $addform->get_data())
 	$record->conditionpoints = $data->event;
 	$record->valuepoints = $data->value;
 	$record->eventdescription = empty($data->description) ? null : $data->description;
+	$record->pointslimit = empty($data->pointslimit) ? null : $data->pointslimit;
 	$record->blockinstanceid = $oldpointsystem->blockinstanceid;
 	$psid = $DB->insert_record('points_system', $record);
 	

@@ -113,6 +113,25 @@ class block_game_points extends block_base
 										
 					foreach($pss as $pointsystem)
 					{
+						
+						$sql = "SELECT sum(p.points) as points
+							FROM
+								{points_log} p
+							INNER JOIN {logstore_standard_log} l ON p.logid = l.id
+							WHERE l.userid = :userid
+								AND p.pointsystemid = :pointsystemid
+							GROUP BY l.userid";	
+
+						$params['userid'] = $USER->id;
+						$params['pointsystemid'] = $pointsystem->id;
+						
+						$psuserpoints = $DB->get_record_sql($sql, $params);
+						
+						if(isset($pointsystem->pointslimit) && $psuserpoints->points >= $pointsystem->pointslimit)
+						{
+							continue;
+						}
+						
 						if($pointsystem->type == 'random')
 						{
 							$points = $pointsystem->valuepoints;

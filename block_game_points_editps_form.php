@@ -48,6 +48,9 @@ class block_game_points_editps_form extends moodleform {
 		$mform->addElement('text', 'description', 'Descrição');
 		$mform->setDefault('description', $pointsystem->eventdescription);
 		
+		$mform->addElement('text', 'pointslimit', 'Limite de pontos');
+		$mform->setDefault('pointslimit', $pointsystem->pointslimit);
+		
 		$mform->addElement('hidden', 'courseid');
 		$mform->addElement('hidden', 'pointsystemid');
 		

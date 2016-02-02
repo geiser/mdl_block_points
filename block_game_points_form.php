@@ -33,6 +33,8 @@ class block_game_points_form extends moodleform {
 		
 		$mform->addElement('text', 'description', 'Descrição');
 		
+		$mform->addElement('text', 'pointslimit', 'Limite de pontos');
+		
 		$mform->addElement('hidden', 'blockid');
 		$mform->addElement('hidden', 'courseid');
 		

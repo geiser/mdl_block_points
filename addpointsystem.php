@@ -42,6 +42,7 @@ else if($data = $addform->get_data())
 	$record->conditionpoints = $data->event;
 	$record->valuepoints = $data->value;
 	$record->eventdescription = empty($data->description) ? null : $data->description;
+	$record->pointslimit = empty($data->pointslimit) ? null : $data->pointslimit;
 	$record->blockinstanceid = $blockid;
 	$psid = $DB->insert_record('points_system', $record);
 	

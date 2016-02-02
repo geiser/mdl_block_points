@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/game_points/db" VERSION="20160119" COMMENT="XMLDB file for Moodle blocks/points"
+<XMLDB PATH="blocks/game_points/db" VERSION="20160201" COMMENT="XMLDB file for Moodle blocks/points"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -21,6 +21,7 @@
         <FIELD NAME="type" TYPE="char" LENGTH="6" NOTNULL="true" SEQUENCE="false" COMMENT="Randômico, fixo, único ou escalar"/>
         <FIELD NAME="conditionpoints" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="valuepoints" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="pointslimit" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="deleted" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="eventdescription" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="blockinstanceid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
