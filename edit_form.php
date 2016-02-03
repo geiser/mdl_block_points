@@ -55,6 +55,30 @@ class block_game_points_edit_form extends block_edit_form {
 			$html = $html . '</table>' . html_writer::link($url, get_string('addpointsystempage', 'block_game_points'));
 			$mform->addElement('html', $html);
 			
+			$mform->addElement('header', 'linkheader', get_string('linkeditpage', 'block_game_points'));
+			
+			$sql = "SELECT *
+				FROM {points_link} l
+					INNER JOIN {points_link_processor} p ON l.id = p.linkid
+				WHERE p.processorid = :processorid
+					AND l.blockinstanceid = :blockinstanceid";
+			$params['processorid'] = $USER->id;
+			$params['blockinstanceid'] = $this->block->instance->id;
+			$block_links = $DB->get_records_sql($sql, $params);
+			
+			$blocks_info = $DB->get_records('block_instances', array('blockname' => 'game_points'));
+			
+			$html = '<table><tr><th>ID</th><th>Acumular pontos de</th><th>Remover</th></tr>';
+			foreach($block_links as $value)
+			{
+				$urlremove = new moodle_url('/blocks/game_points/linkdelete.php', array('courseid' => $COURSE->id, 'linkid' => $value->id));
+				$instance = block_instance('game_points', $blocks_info[$value->accfromblockinstanceid]);
+				$html = $html . '<tr><td>' . $value->id . '</td><td>' . $instance->title . '</td><td>' . html_writer::link($urlremove, 'Remover') . '</td></tr>';
+			}
+			$url = new moodle_url('/blocks/game_points/linkadd.php', array('blockid' => $this->block->instance->id, 'courseid' => $COURSE->id));
+			$html = $html . '</table>' . html_writer::link($url, get_string('linkaddpage', 'block_game_points'));
+			$mform->addElement('html', $html);
+			
 			// Common module settings
 			/*$mform->addElement('header', 'modstandardelshdr', get_string('modstandardels', 'form'));
 

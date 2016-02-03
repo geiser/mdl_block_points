@@ -28,7 +28,7 @@ class block_game_points extends block_base
 	{
 		global $DB, $USER;
 		$this->content = new stdClass;
-	
+		
 		if($this->page->course->id == 1) // Pagina inicial
 		{
 			$sql = "SELECT sum(p.points) as points
@@ -37,11 +37,13 @@ class block_game_points extends block_base
 				INNER JOIN {logstore_standard_log} l ON p.logid = l.id
 				INNER JOIN {points_system} s ON p.pointsystemid = s.id
 				WHERE l.userid = :userid
-					AND s.blockinstanceid = :blockinstanceid
-				GROUP BY l.userid";	
-
+					AND (s.blockinstanceid IN (SELECT accfromblockinstanceid FROM {points_link} WHERE blockinstanceid = :blockinstanceid)
+					OR  s.blockinstanceid = :blockid)
+				GROUP BY l.userid";
+				
 			$params['userid'] = $USER->id;
 			$params['blockinstanceid'] = $this->instance->id;
+			$params['blockid'] = $this->instance->id;
 
 			$points = $DB->get_record_sql($sql, $params);
 			
@@ -56,20 +58,21 @@ class block_game_points extends block_base
 		}
 		else // Pagina de um curso
 		{
+
 			$sql = "SELECT sum(p.points) as points
 				FROM
 					{points_log} p
 				INNER JOIN {logstore_standard_log} l ON p.logid = l.id
 				INNER JOIN {points_system} s ON p.pointsystemid = s.id
 				WHERE l.userid = :userid
-					AND l.courseid = :courseid
-					AND s.blockinstanceid = :blockinstanceid
-				GROUP BY l.userid";	
-
+					AND (s.blockinstanceid IN (SELECT accfromblockinstanceid FROM {points_link} WHERE blockinstanceid = :blockinstanceid)
+					OR  s.blockinstanceid = :blockid)
+				GROUP BY l.userid";
+				
 			$params['userid'] = $USER->id;
-			$params['courseid'] = $this->page->course->id;
 			$params['blockinstanceid'] = $this->instance->id;
-
+			$params['blockid'] = $this->instance->id;
+			
 			$points = $DB->get_record_sql($sql, $params);
 			
 			if(empty($points))
