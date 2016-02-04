@@ -13,7 +13,7 @@ class block_game_points_editps_form extends moodleform {
  
     function definition()
 	{
-		global $DB;
+		global $COURSE, $CFG, $DB;
  
 		$pointsystem = $DB->get_record('points_system', array('id' => $this->id));
  
@@ -50,6 +50,16 @@ class block_game_points_editps_form extends moodleform {
 		
 		$mform->addElement('text', 'pointslimit', 'Limite de pontos');
 		$mform->setDefault('pointslimit', $pointsystem->pointslimit);
+		
+		// Restrict access
+		if(!empty($CFG->enableavailability))
+		{
+			$mform->addElement('header', 'availabilityconditionsheader', get_string('restrictaccess', 'availability'));
+			$mform->addElement('textarea', 'availabilityconditionsjson', get_string('accessrestrictions', 'availability'));
+			$mform->setDefault('availabilityconditionsjson', $pointsystem->restrictions);
+
+			\core_availability\frontend::include_all_javascript($COURSE, null);
+		}
 		
 		$mform->addElement('hidden', 'courseid');
 		$mform->addElement('hidden', 'pointsystemid');

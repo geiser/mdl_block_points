@@ -3,6 +3,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/blocks/game_points/classes/helper.php');
+require_once($CFG->dirroot . '/availability/tests/fixtures/mock_info.php');
 
 class block_game_points extends block_base
 {
@@ -116,6 +117,11 @@ class block_game_points extends block_base
 										
 					foreach($pss as $pointsystem)
 					{
+						
+						if(!$this->is_available($pointsystem->restrictions, $this->page->course->id, $USER->id))
+						{
+							continue;
+						}
 						
 						$sql = "SELECT sum(p.points) as points
 							FROM
@@ -269,6 +275,22 @@ class block_game_points extends block_base
 	{
         return true;
     }
+	
+	private function is_available($restrictions, $courseid, $userid)
+	{
+		global $DB;
+		
+		if(isset($restrictions))
+		{
+			$tree = new \core_availability\tree(json_decode($restrictions));
+			$course = $DB->get_record('course', array('id' => $courseid));
+			$info = new \core_availability\mock_info($course, $userid);
+			$result = $tree->check_available(false, $info, true, $userid);
+			return $result->is_available();
+		}
+		
+		return true;
+	}
 }
 
 ?>

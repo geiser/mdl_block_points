@@ -116,36 +116,7 @@ class block_game_points_edit_form extends block_edit_form {
 				$options = array(0 => get_string('none')) + $options;
 				$mform->addElement('select', 'groupingid', get_string('grouping', 'group'), $options);
 				$mform->addHelpButton('groupingid', 'grouping', 'group');
-			}
-
-			if (!empty($CFG->enableavailability)) {
-				// Add special button to end of previous section if groups/groupings
-				// are enabled.
-				if ($this->_features->groups || $this->_features->groupings) {
-					$mform->addElement('static', 'restrictgroupbutton', '',
-							html_writer::tag('button', get_string('restrictbygroup', 'availability'),
-							array('id' => 'restrictbygroup', 'disabled' => 'disabled')));
-				}
-
-				// Availability field. This is just a textarea; the user interface
-				// interaction is all implemented in JavaScript.
-				$mform->addElement('header', 'availabilityconditionsheader',
-						get_string('restrictaccess', 'availability'));
-				// Note: This field cannot be named 'availability' because that
-				// conflicts with fields in existing modules (such as assign).
-				// So it uses a long name that will not conflict.
-				$mform->addElement('textarea', 'availabilityconditionsjson',
-						get_string('accessrestrictions', 'availability'));
-				// The _cm variable may not be a proper cm_info, so get one from modinfo.
-				if ($this->_cm) {
-					$modinfo = get_fast_modinfo($COURSE);
-					$cm = $modinfo->get_cm($this->_cm->id);
-				} else {
-					$cm = null;
-				}
-				\core_availability\frontend::include_all_javascript($COURSE, $cm);
 			}*/
-			
 		}
 	}
 }

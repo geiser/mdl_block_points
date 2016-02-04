@@ -2,6 +2,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot . '/availability/tests/fixtures/mock_info.php');
+
 class block_game_points_helper {
 
 	public static function observer(\core\event\base $event)
@@ -12,9 +14,13 @@ class block_game_points_helper {
             return;
         }
 				
-		$pss = $DB->get_records('points_system', array('conditionpoints' => $event->eventname, 'deleted' => 0));
+		$pss = $DB->get_records_sql("SELECT * FROM {points_system} WHERE deleted = ? AND ".$DB->sql_compare_text('conditionpoints')." = ". $DB->sql_compare_text('?'), array('deleted' => 0, 'conditionpoints' => $event->eventname));
 		foreach($pss as $pointsystem)
 		{
+			if(! block_game_points_helper::is_available($pointsystem->restrictions, $event->courseid, $event->userid))
+			{
+				continue;
+			}
 			
 			$sql = "SELECT sum(p.points) as points
 				FROM
@@ -132,6 +138,22 @@ class block_game_points_helper {
 		
     }
 
+	private static function is_available($restrictions, $courseid, $userid)
+	{
+		global $DB;
+		
+		if(isset($restrictions))
+		{
+			$tree = new \core_availability\tree(json_decode($restrictions));
+			$course = $DB->get_record('course', array('id' => $courseid));
+			$info = new \core_availability\mock_info($course, $userid);
+			$result = $tree->check_available(false, $info, true, $userid);
+			return $result->is_available();
+		}
+		
+		return true;
+	}
+	
     protected static function is_student($userid) {
         return user_has_role_assignment($userid, 5);
     }

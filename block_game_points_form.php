@@ -4,7 +4,9 @@ require_once("{$CFG->libdir}/formslib.php");
  
 class block_game_points_form extends moodleform {
  
-    function definition() {
+    function definition()
+	{
+		global $COURSE, $CFG, $DB;
  
         $mform =& $this->_form;
         $mform->addElement('header','displayinfo', get_string('addpointsystemheading', 'block_game_points'));
@@ -34,6 +36,15 @@ class block_game_points_form extends moodleform {
 		$mform->addElement('text', 'description', 'Descrição');
 		
 		$mform->addElement('text', 'pointslimit', 'Limite de pontos');
+		
+		// Restrict access
+		if(!empty($CFG->enableavailability))
+		{
+			$mform->addElement('header', 'availabilityconditionsheader', get_string('restrictaccess', 'availability'));
+			$mform->addElement('textarea', 'availabilityconditionsjson', get_string('accessrestrictions', 'availability'));
+
+			\core_availability\frontend::include_all_javascript($COURSE, null);
+		}
 		
 		$mform->addElement('hidden', 'blockid');
 		$mform->addElement('hidden', 'courseid');
