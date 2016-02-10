@@ -26,7 +26,7 @@ class block_game_points_linkadd_form extends moodleform
 			$instance = block_instance('game_points', $info);
 			
 			$instance_context_level = context::instance_by_id($instance->instance->parentcontextid)->contextlevel;
-			if($block_context_level >= $instance_context_level)
+			if($block_context_level > $instance_context_level || $instance->instance->id == $this->blockid)
 			{
 				continue;
 			}
