@@ -32,57 +32,11 @@ class block_game_points extends block_base
 		
 		if($this->page->course->id == 1) // Pagina inicial
 		{
-			$sql = "SELECT sum(p.points) as points
-				FROM
-					{points_log} p
-				INNER JOIN {logstore_standard_log} l ON p.logid = l.id
-				INNER JOIN {points_system} s ON p.pointsystemid = s.id
-				WHERE l.userid = :userid
-					AND (s.blockinstanceid IN (SELECT accfromblockinstanceid FROM {points_link} WHERE blockinstanceid = :blockinstanceid)
-					OR  s.blockinstanceid = :blockid)
-				GROUP BY l.userid";
-				
-			$params['userid'] = $USER->id;
-			$params['blockinstanceid'] = $this->instance->id;
-			$params['blockid'] = $this->instance->id;
-
-			$points = $DB->get_record_sql($sql, $params);
-			
-			if(empty($points))
-			{
-				$points = new stdClass();
-				$points->points = 0;
-			}
-			
-			$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $points->points . '</font></center>';
-			
+			$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $this->get_points($this->instance->id, $USER->id) . '</font></center>';
 		}
 		else // Pagina de um curso
 		{
-
-			$sql = "SELECT sum(p.points) as points
-				FROM
-					{points_log} p
-				INNER JOIN {logstore_standard_log} l ON p.logid = l.id
-				INNER JOIN {points_system} s ON p.pointsystemid = s.id
-				WHERE l.userid = :userid
-					AND (s.blockinstanceid IN (SELECT accfromblockinstanceid FROM {points_link} WHERE blockinstanceid = :blockinstanceid)
-					OR  s.blockinstanceid = :blockid)
-				GROUP BY l.userid";
-				
-			$params['userid'] = $USER->id;
-			$params['blockinstanceid'] = $this->instance->id;
-			$params['blockid'] = $this->instance->id;
-			
-			$points = $DB->get_record_sql($sql, $params);
-			
-			if(empty($points))
-			{
-				$points = new stdClass();
-				$points->points = 0;
-			}
-			
-			$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $points->points . '</font></center>';
+			$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $this->get_points($this->instance->id, $USER->id) . '</font></center>';
 			
 			// Footer
 			if(user_has_role_assignment($USER->id, 5))
@@ -291,6 +245,54 @@ class block_game_points extends block_base
 		
 		return true;
 	}
+	
+	private function get_block_points($blockid, $userid)
+	{
+		global $DB;
+		
+		$sql = "SELECT sum(p.points) as points
+			FROM
+				{points_log} p
+			INNER JOIN {logstore_standard_log} l ON p.logid = l.id
+			INNER JOIN {points_system} s ON p.pointsystemid = s.id
+			WHERE l.userid = :userid
+				AND  s.blockinstanceid = :blockinstanceid
+			GROUP BY l.userid";
+			
+		$params['userid'] = $userid;
+		$params['blockinstanceid'] = $blockid;
+
+		$points = $DB->get_record_sql($sql, $params);
+
+		if(empty($points))
+		{
+			$points = new stdClass();
+			$points->points = 0;
+		}
+		
+		return $points->points;
+	}
+	
+	private function get_points($blockid, $userid)
+	{
+		global $DB;
+
+		$points = $this->get_block_points($blockid, $userid);
+		
+		$links = $DB->get_records('points_link', array('blockinstanceid' => $blockid), '', 'accfromblockinstanceid');
+		if(empty($links))
+		{
+			return $points;
+		}
+		
+		foreach($links as $link)
+		{
+			$points += $this->get_points($link->accfromblockinstanceid, $userid);
+		}
+		
+		return $points;
+	}
+	
 }
 
 ?>

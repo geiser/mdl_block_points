@@ -92,7 +92,7 @@ class block_game_points_helper {
 			
 			if($points <= 0 && $pointsystem->type != 'scalar')
 			{
-				return;
+				continue;
 			}
 			
 			$manager = get_log_manager();
