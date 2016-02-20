@@ -140,6 +140,34 @@ class block_game_points extends block_base
 						
 						if($points > 0)
 						{
+							if(isset($pointsystem->pointslimit))
+							{
+								if($pointsystem->type == 'random')
+								{
+									$separate = explode("-", $pointsystem->valuepoints);
+									$min = $separate[0];
+									$max = $separate[1];
+									
+									if($psuserpoints->points + $min > $pointsystem->pointslimit)
+									{
+										$min = $pointsystem->pointslimit - $psuserpoints->points;
+									}
+									if($psuserpoints->points + $max > $pointsystem->pointslimit)
+									{
+										$max = $pointsystem->pointslimit - $psuserpoints->points;
+									}
+									
+									$points = $min . "-" . $max;
+								}
+								else
+								{
+									if($psuserpoints->points + $points > $pointsystem->pointslimit)
+									{
+										$points = $pointsystem->pointslimit - $psuserpoints->points;
+									}
+								}
+							}
+							
 							$eventdescription = is_null($pointsystem->eventdescription) ? $eventsarray[$pointsystem->conditionpoints] : $pointsystem->eventdescription;
 							$pointslist = $pointslist . '<li>' . $points . ' pontos por ' . $eventdescription . '</li>';
 						}

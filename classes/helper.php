@@ -17,7 +17,20 @@ class block_game_points_helper {
 		$pss = $DB->get_records_sql("SELECT * FROM {points_system} WHERE deleted = ? AND ".$DB->sql_compare_text('conditionpoints')." = ". $DB->sql_compare_text('?'), array('deleted' => 0, 'conditionpoints' => $event->eventname));
 		foreach($pss as $pointsystem)
 		{
-			if(! block_game_points_helper::is_available($pointsystem->restrictions, $event->courseid, $event->userid))
+			if(!block_game_points_helper::is_available($pointsystem->restrictions, $event->courseid, $event->userid))
+			{
+				continue;
+			}
+			
+			$blockcontextid = $DB->get_field('block_instances', 'parentcontextid', array('id' => $pointsystem->blockinstanceid));
+			if(!$blockcontextid) // Acontece se o bloco for apagado
+			{
+				continue;
+			}
+			
+			$blockcontext = context::instance_by_id($blockcontextid);
+			$context = context::instance_by_id($event->contextid);
+			if(strpos($context->path, $blockcontext->path) !== 0) // Se o o contexto atual não estiver na hierarquia do contexto do bloco
 			{
 				continue;
 			}
@@ -93,6 +106,11 @@ class block_game_points_helper {
 			if($points <= 0 && $pointsystem->type != 'scalar')
 			{
 				continue;
+			}
+			
+			if((isset($pointsystem->pointslimit)) && ($psuserpoints->points + $points > $pointsystem->pointslimit))
+			{
+				$points = $pointsystem->pointslimit - $psuserpoints->points;
 			}
 			
 			$manager = get_log_manager();
