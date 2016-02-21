@@ -30,20 +30,23 @@ class block_game_points extends block_base
 		global $DB, $USER;
 		$this->content = new stdClass;
 		
-		
-		if($this->page->course->id == 1) // Pagina inicial
+		if(user_has_role_assignment($USER->id, 5)) // Verificar se é estudante? inverter e colcoar contexto pode ser melhor
 		{
-			$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $this->get_points($this->instance->id, $USER->id) . '</font></center>';
-		}
-		else // Pagina de um curso
-		{
-			$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $this->get_points($this->instance->id, $USER->id) . '</font></center>' . $this->get_group_points_message();
+			$showblock = false;
+			if(context::instance_by_id($this->instance->parentcontextid)->contextlevel < $this->page->context->contextlevel && $this->has_points_systems($this->instance->id))
+			{
+				$showblock = true;
+			}
+			else if($this->has_points_systems($this->instance->id, true))
+			{
+				$showblock = true;
+			}
 			
-			// Footer
-			if(user_has_role_assignment($USER->id, 5))
+			$eventslist = null;
+			$eventsarray = array();
+			if($this->page->course->id != 1) // Pagina de curso
 			{
 				$eventslist = report_eventlist_list_generator::get_non_core_event_list();
-				$eventsarray = array();
 				foreach($eventslist as $value)
 				{
 					$description = explode("\\", explode(".", strip_tags($value['fulleventname']))[0]);
@@ -178,52 +181,68 @@ class block_game_points extends block_base
 					if(strlen($pointslist) > 0)
 					{
 						$this->content->footer = 'Você pode ganhar:<ul>' . $pointslist . '</ul>';
-					}
-					
+						$showblock = true;
+					}	
 				}
-				
-				if(isset($this->config))
-				{
-					$lastpointsnumber = isset($this->config->lastpointsnumber) ? $this->config->lastpointsnumber : 1;
-				}
-				else
-				{
-					$lastpointsnumber = 0;
-				}
-				
-				if($lastpointsnumber > 0)
-				{
-					$sql = "SELECT p.logid as logid, sum(p.points) as points, s.eventdescription as eventdescription, s.conditionpoints as conditionpoints
-						FROM {points_log} p
-						INNER JOIN {logstore_standard_log} l ON p.logid = l.id
-						INNER JOIN {points_system} s ON p.pointsystemid = s.id
-						WHERE l.userid = :userid
-							AND l.courseid = :courseid
-							AND s.blockinstanceid = :blockinstanceid
-							AND p.points > 0
-                        GROUP BY p.logid
-						ORDER BY p.logid DESC";
-
-					$params['userid'] = $USER->id;
-					$params['courseid'] = $this->page->course->id;
-					$params['blockinstanceid'] = $this->instance->id;
-
-					$lastpoints = $DB->get_records_sql($sql, $params, 0, isset($this->config->lastpointsnumber) ? $this->config->lastpointsnumber : 1);
-					
-					if(!empty($lastpoints))
-					{
-						$lastpointslist = '';
-						foreach($lastpoints as $lp)
-						{
-							$eventdescription = is_null($lp->eventdescription) ? $eventsarray[$lp->conditionpoints] : $lp->eventdescription;
-							$lastpointslist = $lastpointslist . '<li>' . $lp->points . ' pontos por ' . $eventdescription . '</li>';
-						}
-						$this->content->footer = $this->content->footer . 'Você ganhou recentemente:<ul>' . $lastpointslist . '</ul>';
-					}
-				}
-			 
 			}
-			 
+			
+			if($showblock)
+			{
+				$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $this->get_points($this->instance->id, $USER->id) . '</font></center>';
+				
+				if($this->page->course->id != 1) // Pagina de curso
+				{
+					$this->content->text = $this->content->text . $this->get_group_points_message();
+					
+					if(isset($this->config))
+					{
+						$lastpointsnumber = isset($this->config->lastpointsnumber) ? $this->config->lastpointsnumber : 1;
+					}
+					else
+					{
+						$lastpointsnumber = 0;
+					}
+					
+					if($lastpointsnumber > 0)
+					{
+						$sql = "SELECT p.logid as logid, sum(p.points) as points, s.eventdescription as eventdescription, s.conditionpoints as conditionpoints
+							FROM {points_log} p
+							INNER JOIN {logstore_standard_log} l ON p.logid = l.id
+							INNER JOIN {points_system} s ON p.pointsystemid = s.id
+							WHERE l.userid = :userid
+								AND l.courseid = :courseid
+								AND s.blockinstanceid = :blockinstanceid
+								AND p.points > 0
+							GROUP BY p.logid
+							ORDER BY p.logid DESC";
+
+						$params['userid'] = $USER->id;
+						$params['courseid'] = $this->page->course->id;
+						$params['blockinstanceid'] = $this->instance->id;
+
+						$lastpoints = $DB->get_records_sql($sql, $params, 0, isset($this->config->lastpointsnumber) ? $this->config->lastpointsnumber : 1);
+						
+						if(!empty($lastpoints))
+						{
+							$lastpointslist = '';
+							foreach($lastpoints as $lp)
+							{
+								$eventdescription = is_null($lp->eventdescription) ? $eventsarray[$lp->conditionpoints] : $lp->eventdescription;
+								$lastpointslist = $lastpointslist . '<li>' . $lp->points . ' pontos por ' . $eventdescription . '</li>';
+							}
+							$this->content->footer = $this->content->footer . 'Você ganhou recentemente:<ul>' . $lastpointslist . '</ul>';
+						}
+					}
+				}
+			}
+			else
+			{
+				$this->content = new stdClass;
+			}
+		}
+		else
+		{
+			$this->content->text = 'Você não é um estudante neste contexto!<br>Seus pontos: <br><p align="center"><font size="28">' . $this->get_points($this->instance->id, $USER->id) . '</font></center>';
 		}
 		
 		return $this->content;
@@ -443,15 +462,54 @@ class block_game_points extends block_base
 		$sql = "SELECT sum(l.points)
 					FROM {points_group_log} g
 						INNER JOIN {points_log} l ON l.id = g.pointslogid
-					WHERE g.groupid = :groupid";
+						INNER JOIN {points_system} s ON s.id = l.pointsystemid
+					WHERE g.groupid = :groupid
+						AND s.blockinstanceid = :blockinstanceid";
 		
 		$params['groupid'] = $groupid;
+		$params['blockinstanceid'] = $this->instance->id;
 		
 		$grouppoints = $DB->get_field_sql($sql, $params);
 		
 		return (empty($grouppoints) ? 0 : $grouppoints);
 	}
 	
+	private function has_points_systems($blockinstanceid, $uselinks = false)
+	{
+		global $DB;
+
+		if($uselinks)
+		{
+			$result = $this->has_points_systems($blockinstanceid);
+			if($result)
+			{
+				return true;
+			}
+			
+			$links = $DB->get_records('points_link', array('blockinstanceid' => $blockinstanceid), '', 'accfromblockinstanceid');
+			if(empty($links))
+			{
+				return false;
+			}
+		
+			foreach($links as $link)
+			{
+				$result = $this->has_points_systems($link->accfromblockinstanceid, true);
+				if($result)
+				{
+					return true;
+				}
+			}
+		}
+		else
+		{
+			$count = $DB->count_records('points_system', array('deleted' => 0, 'blockinstanceid' => $blockinstanceid));
+			
+			return ($count > 0);			
+		}
+		
+		return false;
+	}
 }
 
 ?>
