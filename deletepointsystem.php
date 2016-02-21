@@ -48,6 +48,8 @@ else if($data = $addform->get_data())
 	$record->pointslimit = $oldpointsystem->pointslimit;
 	$record->blockinstanceid = $oldpointsystem->blockinstanceid;
 	$record->restrictions = $oldpointsystem->restrictions;
+	$record->groupmode = $oldpointsystem->groupmode;
+	$record->groupingid = $oldpointsystem->groupingid;
 	$record->deleted = 1;
 	$DB->update_record('points_system', $record);
 	

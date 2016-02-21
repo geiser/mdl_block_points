@@ -150,10 +150,29 @@ class block_game_points_helper {
 			$record->logid = $logid;
 			$record->pointsystemid = $pointsystem->id;
 			$record->points = $points;
-			$DB->insert_record('points_log', $record);
+			$pointslogid = $DB->insert_record('points_log', $record);
 			
+			if($pointsystem->groupmode != NOGROUPS)
+			{
+				$groups = null;				
+				if(isset($pointsystem->groupingid))
+				{
+					$groups = groups_get_all_groups($event->courseid, $event->userid, $pointsystem->groupingid);
+				}
+				else
+				{
+					$groups = groups_get_all_groups($event->courseid, $event->userid);
+				}
+				
+				$record = new stdClass();
+				$record->pointslogid = $pointslogid;
+				foreach($groups as $group)
+				{
+					$record->groupid = $group->id;
+					$DB->insert_record('points_group_log', $record);
+				}
+			}
 		}
-		
     }
 
 	private static function is_available($restrictions, $courseid, $userid)

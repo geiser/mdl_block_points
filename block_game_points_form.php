@@ -46,6 +46,27 @@ class block_game_points_form extends moodleform {
 			\core_availability\frontend::include_all_javascript($COURSE, null);
 		}
 		
+		// Common group settings
+		$mform->addElement('header', 'modstandardelshdr', get_string('modstandardels', 'form'));
+
+		$options = array(NOGROUPS       => get_string('groupsnone'),
+						 SEPARATEGROUPS => get_string('groupsseparate'),
+						 VISIBLEGROUPS  => get_string('groupsvisible'));
+		$mform->addElement('select', 'groupmode', get_string('groupmode', 'group'), $options, NOGROUPS);
+		$mform->addHelpButton('groupmode', 'groupmode', 'group');
+		
+		$options = array();
+		if ($groupings = $DB->get_records('groupings', array('courseid'=>$COURSE->id))) {
+			foreach ($groupings as $grouping) {
+				$options[$grouping->id] = format_string($grouping->name);
+			}
+		}
+		core_collator::asort($options);
+		$options = array(0 => get_string('none')) + $options;
+		$mform->addElement('select', 'groupingid', get_string('grouping', 'group'), $options);
+		$mform->addHelpButton('groupingid', 'grouping', 'group');
+		
+		// Elementos escondidos
 		$mform->addElement('hidden', 'blockid');
 		$mform->addElement('hidden', 'courseid');
 		

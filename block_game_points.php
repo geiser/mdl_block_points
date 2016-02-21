@@ -30,13 +30,14 @@ class block_game_points extends block_base
 		global $DB, $USER;
 		$this->content = new stdClass;
 		
+		
 		if($this->page->course->id == 1) // Pagina inicial
 		{
 			$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $this->get_points($this->instance->id, $USER->id) . '</font></center>';
 		}
 		else // Pagina de um curso
 		{
-			$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $this->get_points($this->instance->id, $USER->id) . '</font></center>';
+			$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $this->get_points($this->instance->id, $USER->id) . '</font></center>' . $this->get_group_points_message();
 			
 			// Footer
 			if(user_has_role_assignment($USER->id, 5))
@@ -192,16 +193,6 @@ class block_game_points extends block_base
 				
 				if($lastpointsnumber > 0)
 				{
-					/*$sql = "SELECT p.id as id, p.points as points, s.eventdescription as eventdescription, s.conditionpoints as conditionpoints
-						FROM
-							{points_log} p
-						INNER JOIN {logstore_standard_log} l ON p.logid = l.id
-						INNER JOIN {points_system} s ON p.pointsystemid = s.id
-						WHERE l.userid = :userid
-							AND l.courseid = :courseid
-							AND s.blockinstanceid = :blockinstanceid
-							AND p.points > 0
-						ORDER BY p.id DESC";*/
 					$sql = "SELECT p.logid as logid, sum(p.points) as points, s.eventdescription as eventdescription, s.conditionpoints as conditionpoints
 						FROM {points_log} p
 						INNER JOIN {logstore_standard_log} l ON p.logid = l.id
@@ -319,6 +310,146 @@ class block_game_points extends block_base
 		}
 		
 		return $points;
+	}
+	
+	private function get_groupmode()
+	{
+		global $DB;
+		
+		$sql = "SELECT max(groupmode) as groupmode
+			FROM
+				{points_system}
+			WHERE deleted = :deleted
+				AND  blockinstanceid = :blockinstanceid";
+			
+		$params['deleted'] = 0;
+		$params['blockinstanceid'] = $this->instance->id;
+		
+		$groupmode = $DB->get_field_sql($sql, $params);
+		
+		return $groupmode;		
+	}
+	
+	private function get_groupids()
+	{
+		global $DB;
+		
+		$sql = "SELECT DISTINCT(groupid)
+			FROM {groupings_groups}
+			WHERE groupingid IN
+				(
+					SELECT DISTINCT(groupingid)
+						FROM {points_system}
+						WHERE groupingid IS NOT NULL
+							AND deleted = :deleted
+							AND blockinstanceid = :blockinstanceid
+				)";
+				
+		$params['deleted'] = 0;
+		$params['blockinstanceid'] = $this->instance->id;
+		
+		$groupids = $DB->get_fieldset_sql($sql, $params);
+		
+		return $groupids;
+	}
+	
+	private function get_group_points_message()
+	{
+		global $USER;
+		
+		$message = '<p align="left">';
+		
+		$groupmode = $this->get_groupmode();
+		if($groupmode == SEPARATEGROUPS)
+		{
+			$usergroups = groups_get_all_groups($this->page->course->id, $USER->id);
+			$blockgroupids = $this->get_groupids();
+			
+			if(empty($blockgroupids)) // Se agrupamentos não foram especificados
+			{
+				foreach($usergroups as $group)
+				{
+					//Calcular e imprimir os pontos do grupo!
+					$message = $message . '<br>Pontos do seu grupo ' . $group->name . ': ' . $this->get_group_points($group->id);
+				}
+			}
+			else // Se foram
+			{
+				foreach($usergroups as $group)
+				{
+					if(in_array($group->id, $blockgroupids))
+					{
+						//Calcular e imprimir os pontos do grupo!
+						$message = $message . '<br>Pontos do seu grupo ' . $group->name . ': ' . $this->get_group_points($group->id);
+					}
+				}
+			}
+		}
+		else if($groupmode == VISIBLEGROUPS)
+		{
+			$usergroups = groups_get_all_groups($this->page->course->id, $USER->id);
+			$blockgroupids = $this->get_groupids();
+			
+			if(empty($blockgroupids)) // Se agrupamentos não foram especificados
+			{
+				$allgroups = groups_get_all_groups($this->page->course->id);
+
+				foreach($usergroups as $group)
+				{
+					unset($allgroups[$group->id]);
+					
+					//Calcular e imprimir os pontos do grupo!
+					$message = $message . '<br>Pontos do seu grupo ' . $group->name . ': ' . $this->get_group_points($group->id);
+					
+				}
+				
+				foreach($allgroups as $group)
+				{
+					//Calcular e imprimir os pontos do grupo!
+					$message = $message . '<br>Pontos do grupo ' . $group->name . ': ' . $this->get_group_points($group->id);
+				}
+				
+				
+			}
+			else // Se foram
+			{
+				foreach($usergroups as $group)
+				{
+					$found = array_search($group->id, $blockgroupids);
+					if($found !== false)
+					{
+						unset($blockgroupids[$found]);
+						
+						//Calcular e imprimir os pontos do grupo!
+						$message = $message . '<br>Pontos do seu grupo ' . $group->name . ': ' . $this->get_group_points($group->id);
+					}
+				}
+				
+				foreach($blockgroupids as $group)
+				{
+					//Calcular e imprimir os pontos do grupo!
+					$message = $message . '<br>Pontos do grupo ' . groups_get_group_name($group) . ': ' . $this->get_group_points($group);
+				}
+			}
+		}
+		
+		return $message;
+	}
+	
+	private function get_group_points($groupid)
+	{
+		global $DB;
+		
+		$sql = "SELECT sum(l.points)
+					FROM {points_group_log} g
+						INNER JOIN {points_log} l ON l.id = g.pointslogid
+					WHERE g.groupid = :groupid";
+		
+		$params['groupid'] = $groupid;
+		
+		$grouppoints = $DB->get_field_sql($sql, $params);
+		
+		return (empty($grouppoints) ? 0 : $grouppoints);
 	}
 	
 }

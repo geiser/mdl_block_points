@@ -48,6 +48,8 @@ else if($data = $addform->get_data())
 	$record->pointslimit = $oldpointsystem->pointslimit;
 	$record->blockinstanceid = $oldpointsystem->blockinstanceid;
 	$record->restrictions = $oldpointsystem->restrictions;
+	$record->groupmode = $oldpointsystem->groupmode;
+	$record->groupingid = $oldpointsystem->groupingid;
 	$record->deleted = 1;
 	$DB->update_record('points_system', $record);
 	
@@ -59,6 +61,8 @@ else if($data = $addform->get_data())
 	$record->pointslimit = empty($data->pointslimit) ? null : $data->pointslimit;
 	$record->blockinstanceid = $oldpointsystem->blockinstanceid;
 	$record->restrictions = empty($data->availabilityconditionsjson) ? null : $data->availabilityconditionsjson;
+	$record->groupmode = $data->groupmode;
+	$record->groupingid = ($data->groupmode == NOGROUPS || $data->groupingid == 0) ? null : $data->groupingid;
 	$psid = $DB->insert_record('points_system', $record);
 	
 	$record = new stdClass();

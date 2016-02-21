@@ -78,46 +78,7 @@ class block_game_points_edit_form extends block_edit_form {
 			$url = new moodle_url('/blocks/game_points/linkadd.php', array('blockid' => $this->block->instance->id, 'courseid' => $COURSE->id));
 			$html = $html . '</table>' . html_writer::link($url, get_string('linkaddpage', 'block_game_points'));
 			$mform->addElement('html', $html);
-			
-			// Common module settings
-			/*$mform->addElement('header', 'modstandardelshdr', get_string('modstandardels', 'form'));
-
-			$mform->addElement('modvisible', 'visible', get_string('visible'));
-			if (!empty($this->_cm)) {
-				$context = context_module::instance($this->_cm->id);
-				if (!has_capability('moodle/course:activityvisibility', $context)) {
-					$mform->hardFreeze('visible');
-				}
-			}
-
-			if ($this->_features->idnumber) {
-				$mform->addElement('text', 'cmidnumber', get_string('idnumbermod'));
-				$mform->setType('cmidnumber', PARAM_RAW);
-				$mform->addHelpButton('cmidnumber', 'idnumbermod');
-			}
-
-			if ($this->_features->groups) {
-				$options = array(NOGROUPS       => get_string('groupsnone'),
-								 SEPARATEGROUPS => get_string('groupsseparate'),
-								 VISIBLEGROUPS  => get_string('groupsvisible'));
-				$mform->addElement('select', 'groupmode', get_string('groupmode', 'group'), $options, NOGROUPS);
-				$mform->addHelpButton('groupmode', 'groupmode', 'group');
-			}
-
-			if ($this->_features->groupings) {
-				// Groupings selector - used to select grouping for groups in activity.
-				$options = array();
-				if ($groupings = $DB->get_records('groupings', array('courseid'=>$COURSE->id))) {
-					foreach ($groupings as $grouping) {
-						$options[$grouping->id] = format_string($grouping->name);
-					}
-				}
-				core_collator::asort($options);
-				$options = array(0 => get_string('none')) + $options;
-				$mform->addElement('select', 'groupingid', get_string('grouping', 'group'), $options);
-				$mform->addHelpButton('groupingid', 'grouping', 'group');
-			}*/
-		}
+		}			
 	}
 }
 
