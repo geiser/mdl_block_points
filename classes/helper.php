@@ -3,6 +3,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/availability/tests/fixtures/mock_info.php');
+require_once('event/points_earned.php');
 
 class block_game_points_helper {
 
@@ -15,8 +16,11 @@ class block_game_points_helper {
         }
 				
 		$pss = $DB->get_records_sql("SELECT * FROM {points_system} WHERE deleted = ? AND ".$DB->sql_compare_text('conditionpoints')." = ". $DB->sql_compare_text('?'), array('deleted' => 0, 'conditionpoints' => $event->eventname));
+		
+		$got_points = false;
 		foreach($pss as $pointsystem)
 		{
+		
 			if(!block_game_points_helper::is_available($pointsystem->restrictions, $event->courseid, $event->userid))
 			{
 				continue;
@@ -35,6 +39,7 @@ class block_game_points_helper {
 				continue;
 			}
 			
+					
 			$sql = "SELECT sum(p.points) as points
 				FROM
 					{points_log} p
@@ -172,7 +177,25 @@ class block_game_points_helper {
 					$DB->insert_record('points_group_log', $record);
 				}
 			}
+			
+			if(strcmp($event->eventname, '\block_game_points\event\points_earned') != 0)
+			{
+				$got_points = true;
+			}
 		}
+		
+		if($got_points)
+		{
+			$params = array(
+				'context' => $context,
+				'other' => array(
+					'logid' => $logid, // Arrumar logid
+				)
+			);
+			$event = \block_game_points\event\points_earned::create($params);
+			$event->trigger();
+		}
+		
     }
 
 	private static function is_available($restrictions, $courseid, $userid)

@@ -1,10 +1,17 @@
 <?php
- 
+
+require_once($CFG->dirroot.'/blocks/game_points/lib.php');
+
 class block_game_points_edit_form extends block_edit_form {
  
     protected function specific_definition($mform)
 	{
  		global $COURSE, $DB, $USER;
+ 
+		$mform->addElement('header', 'configviewheader', 'Exibição de grupos');
+ 
+		$mform->addElement('select', 'config_usedetailedview[' . $USER->id . ']', 'Exibir visão detalhada de pontuação de grupos', array(0 => 'Não', 1 => 'Sim'), null);
+		$mform->setType('config_usedetailedview[' . $USER->id . ']', PARAM_INT);
  
 		$context = context_course::instance($COURSE->id);
 		if(has_capability('block/game_points:addpointsystem', $context))
@@ -26,13 +33,7 @@ class block_game_points_edit_form extends block_edit_form {
 				'scalar' => 'Escalar'
 			);
 			
-			$eventslist = report_eventlist_list_generator::get_non_core_event_list();
-			$eventsarray = array();
-			foreach($eventslist as $value)
-			{
-				$description = explode("\\", explode(".", strip_tags($value['fulleventname']))[0]);
-				$eventsarray[$value['eventname']] = $description[0] . " (" . $value['eventname'] . ")";
-			}
+			$eventsarray = get_events_list(true);
 			
 			$sql = "SELECT *
 				FROM {points_system} s

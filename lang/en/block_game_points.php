@@ -21,3 +21,4 @@ $string['linkdeletepage'] = 'Remoção de acúmulo de pontos';
 $string['linkdeleteheading'] = 'Remover acúmulo de pontos';
 $string['linkdeletemessage'] = 'Tem certeza que deseja remover o acúmulo de pontos?';
 $string['linkdeletebutton'] = 'Remover';
+$string['eventpointsearned'] = 'Pontos ganhos';

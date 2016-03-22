@@ -1,7 +1,8 @@
 <?php
 
 require_once("{$CFG->libdir}/formslib.php");
- 
+require_once($CFG->dirroot.'/blocks/game_points/lib.php');
+
 class block_game_points_editps_form extends moodleform {
  
 	function __construct($id, $courseid)
@@ -30,13 +31,7 @@ class block_game_points_editps_form extends moodleform {
 		$mform->addRule('type', null, 'required', null, 'client');
 		$select->setSelected($pointsystem->type);
 		 
-		$eventslist = report_eventlist_list_generator::get_non_core_event_list();
-		$eventsarray = array();
-		foreach($eventslist as $value)
-		{
-			$description = explode("\\", explode(".", strip_tags($value['fulleventname']))[0]);
-			$eventsarray[$value['eventname']] = $description[0] . " (" . $value['eventname'] . ")";
-		}
+		$eventsarray = get_events_list(true);
 		$select = $mform->addElement('select', 'event', 'Evento', $eventsarray, null);
 		$mform->addRule('event', null, 'required', null, 'client');
 		$select->setSelected($pointsystem->conditionpoints);

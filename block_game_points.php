@@ -4,10 +4,11 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/blocks/game_points/classes/helper.php');
 require_once($CFG->dirroot . '/availability/tests/fixtures/mock_info.php');
+require_once($CFG->dirroot.'/blocks/game_points/lib.php');
 
 class block_game_points extends block_base
 {
-
+	
     public function init()
 	{
         $this->title = get_string('title', 'block_game_points');
@@ -42,18 +43,13 @@ class block_game_points extends block_base
 				$showblock = true;
 			}
 			
-			$eventslist = null;
-			$eventsarray = array();
+			$eventsarray = null;
 			if($this->page->course->id != 1) // Pagina de curso
 			{
-				$eventslist = report_eventlist_list_generator::get_non_core_event_list();
-				foreach($eventslist as $value)
-				{
-					$description = explode("\\", explode(".", strip_tags($value['fulleventname']))[0]);
-					$eventsarray[$value['eventname']] = $description[0];
-				}
+				$eventsarray = get_events_list();
+				$pss = $DB->get_records('points_system', array('deleted' => 0, 'blockinstanceid' => $this->instance->id));
 				
-				$pss = null;
+				/*$pss = null;
 				if(is_null($this->page->cm->modname))
 				{
 					$pss = $DB->get_records('points_system', array('deleted' => 0, 'blockinstanceid' => $this->instance->id));
@@ -68,7 +64,7 @@ class block_game_points extends block_base
 						AND p.conditionpoints LIKE '%" . $this->page->cm->modname . "%'";
 					
 					$pss = $DB->get_records_sql($sql);
-				}
+				}*/
 				if(!empty($pss))
 				{
 					$pointslist = '';
@@ -374,7 +370,10 @@ class block_game_points extends block_base
 	
 	private function get_group_points_message()
 	{
-		global $USER;
+		global $USER, $DB;
+		
+		//$detailedview = (isset($this->config->usedetailedview[$USER->id]) ? (bool)$this->config->usedetailedview[$USER->id] : false);
+		$detailedview = true;
 		
 		$message = '<p align="left">';
 		
@@ -389,7 +388,29 @@ class block_game_points extends block_base
 				foreach($usergroups as $group)
 				{
 					//Calcular e imprimir os pontos do grupo!
-					$message = $message . '<br>Pontos do seu grupo ' . $group->name . ': ' . $this->get_group_points($group->id);
+					$message = $message . '<p>Pontos do seu grupo ' . $group->name . ': ' . $this->get_group_points($group->id);
+					
+					if($detailedview)
+					{
+						$sql = 'SELECT l.pointsystemid as pointsystemid, sum(l.points) as points
+									FROM {points_group_log} g
+										INNER JOIN {points_log} l ON l.id = g.pointslogid
+									WHERE g.groupid = :groupid
+									GROUP BY l.pointsystemid';
+									
+						$params['groupid'] = $group->id;
+						
+						$result = $DB->get_records_sql($sql, $params);
+						
+						$message = $message . '<ul>';
+						foreach($result as $pointsystem)
+						{
+							$message = $message . '<li>' . $pointsystem->points . ' pontos pelo sistema ' . $pointsystem->pointsystemid . '</li>';
+						}
+						$message = $message . '</ul>';
+					}
+					
+					$message = $message . '</p>';
 				}
 			}
 			else // Se foram
@@ -399,7 +420,29 @@ class block_game_points extends block_base
 					if(in_array($group->id, $blockgroupids))
 					{
 						//Calcular e imprimir os pontos do grupo!
-						$message = $message . '<br>Pontos do seu grupo ' . $group->name . ': ' . $this->get_group_points($group->id);
+						$message = $message . '<p>Pontos do seu grupo ' . $group->name . ': ' . $this->get_group_points($group->id);
+						
+						if($detailedview)
+						{
+							$sql = 'SELECT l.pointsystemid as pointsystemid, sum(l.points) as points
+										FROM {points_group_log} g
+											INNER JOIN {points_log} l ON l.id = g.pointslogid
+										WHERE g.groupid = :groupid
+										GROUP BY l.pointsystemid';
+										
+							$params['groupid'] = $group->id;
+							
+							$result = $DB->get_records_sql($sql, $params);
+							
+							$message = $message . '<ul>';
+							foreach($result as $pointsystem)
+							{
+								$message = $message . '<li>' . $pointsystem->points . ' pontos pelo sistema ' . $pointsystem->pointsystemid . '</li>';
+							}
+							$message = $message . '</ul>';
+						}
+						
+						$message = $message . '</p>';
 					}
 				}
 			}
@@ -418,14 +461,58 @@ class block_game_points extends block_base
 					unset($allgroups[$group->id]);
 					
 					//Calcular e imprimir os pontos do grupo!
-					$message = $message . '<br>Pontos do seu grupo ' . $group->name . ': ' . $this->get_group_points($group->id);
+					$message = $message . '<p>Pontos do seu grupo ' . $group->name . ': ' . $this->get_group_points($group->id);
+					
+					if($detailedview)
+					{
+						$sql = 'SELECT l.pointsystemid as pointsystemid, sum(l.points) as points
+									FROM {points_group_log} g
+										INNER JOIN {points_log} l ON l.id = g.pointslogid
+									WHERE g.groupid = :groupid
+									GROUP BY l.pointsystemid';
+									
+						$params['groupid'] = $group->id;
+						
+						$result = $DB->get_records_sql($sql, $params);
+						
+						$message = $message . '<ul>';
+						foreach($result as $pointsystem)
+						{
+							$message = $message . '<li>' . $pointsystem->points . ' pontos pelo sistema ' . $pointsystem->pointsystemid . '</li>';
+						}
+						$message = $message . '</ul>';
+					}
+					
+					$message = $message . '</p>';
 					
 				}
 				
 				foreach($allgroups as $group)
 				{
 					//Calcular e imprimir os pontos do grupo!
-					$message = $message . '<br>Pontos do grupo ' . $group->name . ': ' . $this->get_group_points($group->id);
+					$message = $message . '<p>Pontos do grupo ' . $group->name . ': ' . $this->get_group_points($group->id);
+					
+					if($detailedview)
+					{
+						$sql = 'SELECT l.pointsystemid as pointsystemid, sum(l.points) as points
+									FROM {points_group_log} g
+										INNER JOIN {points_log} l ON l.id = g.pointslogid
+									WHERE g.groupid = :groupid
+									GROUP BY l.pointsystemid';
+									
+						$params['groupid'] = $group->id;
+						
+						$result = $DB->get_records_sql($sql, $params);
+						
+						$message = $message . '<ul>';
+						foreach($result as $pointsystem)
+						{
+							$message = $message . '<li>' . $pointsystem->points . ' pontos pelo sistema ' . $pointsystem->pointsystemid . '</li>';
+						}
+						$message = $message . '</ul>';
+					}
+					
+					$message = $message . '</p>';
 				}
 				
 				
@@ -440,7 +527,29 @@ class block_game_points extends block_base
 						unset($blockgroupids[$found]);
 						
 						//Calcular e imprimir os pontos do grupo!
-						$message = $message . '<br>Pontos do seu grupo ' . $group->name . ': ' . $this->get_group_points($group->id);
+						$message = $message . '<p>Pontos do seu grupo ' . $group->name . ': ' . $this->get_group_points($group->id);
+						
+						if($detailedview)
+						{
+							$sql = 'SELECT l.pointsystemid as pointsystemid, sum(l.points) as points
+										FROM {points_group_log} g
+											INNER JOIN {points_log} l ON l.id = g.pointslogid
+										WHERE g.groupid = :groupid
+										GROUP BY l.pointsystemid';
+										
+							$params['groupid'] = $group->id;
+							
+							$result = $DB->get_records_sql($sql, $params);
+							
+							$message = $message . '<ul>';
+							foreach($result as $pointsystem)
+							{
+								$message = $message . '<li>' . $pointsystem->points . ' pontos pelo sistema ' . $pointsystem->pointsystemid . '</li>';
+							}
+							$message = $message . '</ul>';
+						}
+						
+						$message = $message . '</p>';
 					}
 				}
 				
@@ -448,6 +557,28 @@ class block_game_points extends block_base
 				{
 					//Calcular e imprimir os pontos do grupo!
 					$message = $message . '<br>Pontos do grupo ' . groups_get_group_name($group) . ': ' . $this->get_group_points($group);
+					
+					if($detailedview)
+					{
+						$sql = 'SELECT l.pointsystemid as pointsystemid, sum(l.points) as points
+									FROM {points_group_log} g
+										INNER JOIN {points_log} l ON l.id = g.pointslogid
+									WHERE g.groupid = :groupid
+									GROUP BY l.pointsystemid';
+									
+						$params['groupid'] = $group->id;
+						
+						$result = $DB->get_records_sql($sql, $params);
+						
+						$message = $message . '<ul>';
+						foreach($result as $pointsystem)
+						{
+							$message = $message . '<li>' . $pointsystem->points . ' pontos pelo sistema ' . $pointsystem->pointsystemid . '</li>';
+						}
+						$message = $message . '</ul>';
+					}
+					
+					$message = $message . '</p>';
 				}
 			}
 		}
