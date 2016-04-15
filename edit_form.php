@@ -10,9 +10,6 @@ class block_game_points_edit_form extends block_edit_form {
  
 		$mform->addElement('header', 'configviewheader', 'Exibição de grupos');
  
-		$mform->addElement('select', 'config_usedetailedview[' . $USER->id . ']', 'Exibir visão detalhada de pontuação de grupos', array(0 => 'Não', 1 => 'Sim'), null);
-		$mform->setType('config_usedetailedview[' . $USER->id . ']', PARAM_INT);
- 
 		$context = context_course::instance($COURSE->id);
 		if(has_capability('block/game_points:addpointsystem', $context))
 		{
@@ -20,6 +17,9 @@ class block_game_points_edit_form extends block_edit_form {
 			
 			$mform->addElement('text', 'config_title', 'Título do bloco');
 			$mform->setType('config_title', PARAM_TEXT);
+			
+			$mform->addElement('select', 'config_usedetailedview', 'Exibir visão detalhada de pontuação de grupos', array(0 => 'Não', 1 => 'Sim'), null);
+			$mform->setType('config_usedetailedview', PARAM_INT);
 			
 			$mform->addElement('select', 'config_lastpointsnumber', 'Número de últimas pontuações exibidas', array(0, 1, 2, 3, 4, 5, 6), null);
 			$mform->addRule('config_lastpointsnumber', null, 'required', null, 'client');

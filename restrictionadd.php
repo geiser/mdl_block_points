@@ -42,7 +42,18 @@ else if($data = $addform->get_data())
 	$record->type = $data->restriction_type;
 	if($data->restriction_type == 0) // Se for restrição por pontos
 	{
-		$record->prblockid = $data->points_restriction_blockid;
+		$block_or_pointsystem_info = explode("::", $data->points_restriction_blockorpointsystemid);
+		$type = $block_or_pointsystem_info[0];
+		$id = $block_or_pointsystem_info[1];
+		
+		if($type == 'block')
+		{
+			$record->prblockid = $id;
+		}
+		else
+		{
+			$record->prpointsystemid = $id;
+		}
 		$record->properator = $data->points_restriction_operator;
 		$record->prpoints = $data->points_restriction_points;
 		$record->prpointsbetween = isset($data->points_restriction_points_between) ? $data->points_restriction_points_between : null;

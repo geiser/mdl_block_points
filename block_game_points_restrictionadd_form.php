@@ -29,23 +29,33 @@ class block_game_points_restrictionadd_form extends moodleform
 		$mform->addRule('restriction_type', null, 'required', null, 'client');
 		
 		$blockid = $DB->get_field('points_system', 'blockinstanceid', array('id' => $this->pointsystemid));
-		$block_instances = array();
+		$options = array();
 		$blocks_info = $DB->get_records('block_instances', array('blockname' => 'game_points'));
-		$block_context_level = context::instance_by_id($blocks_info[$blockid]->parentcontextid)->contextlevel;
 		foreach($blocks_info as $info)
 		{
 			$instance = block_instance('game_points', $info);
 			
-			$instance_context_level = context::instance_by_id($instance->instance->parentcontextid)->contextlevel;
-			if($block_context_level > $instance_context_level || $instance->instance->id == $blockid)
-			{
-				continue;
-			}
+			$options['block::' . $instance->instance->id] = '- Bloco ' . $instance->title;
 			
-			$block_instances[$instance->instance->id] = $instance->title;
+			$sql = 'SELECT id
+						FROM {points_system}
+						WHERE blockinstanceid = :blockinstanceid
+							AND deleted = :deleted';
+							
+			$params['blockinstanceid'] = $instance->instance->id;
+			$params['deleted'] = 0;
+		
+			$point_system_ids = $DB->get_fieldset_sql($sql, $params);
+			foreach($point_system_ids as $point_system_id)
+			{
+				if($point_system_id != $this->pointsystemid)
+				{
+					$options['pointsystem::' . $point_system_id] = '&nbsp;&nbsp;&nbsp;&nbsp;Sistema de pontos ' . $point_system_id;
+				}
+			}
 		}
-		$mform->addElement('select', 'points_restriction_blockid', 'Os pontos do bloco', $block_instances, null);
-		$mform->disabledIf('points_restriction_blockid', 'restriction_type', 'eq', 1);
+		$mform->addElement('select', 'points_restriction_blockorpointsystemid', 'Os pontos do bloco', $options, null);
+		$mform->disabledIf('points_restriction_blockorpointsystemid', 'restriction_type', 'eq', 1);
 		
 		$operators_array = array(EQUAL => 'Iguais a', GREATER => 'Maiores que', LESS => 'Menores que', EQUALORGREATER => 'Maiores ou iguais a', EQUALORLESS => 'Menores ou iguais a', BETWEEN => 'Entre');
 		$mform->addElement('select', 'points_restriction_operator', 'Devem ser', $operators_array, null);
@@ -63,12 +73,6 @@ class block_game_points_restrictionadd_form extends moodleform
 		foreach($blocks_info as $info)
 		{
 			$instance = block_instance('game_content_unlock', $info);
-			
-			$instance_context_level = context::instance_by_id($instance->instance->parentcontextid)->contextlevel;
-			if($block_context_level > $instance_context_level || $instance->instance->id == $blockid)
-			{
-				continue;
-			}
 			
 			$sql = "SELECT *
 					FROM

@@ -32,10 +32,19 @@ $editnode->make_active();
 $addform = new block_game_points_restrictionmanage_form($pointsystemid);
 if($addform->is_cancelled())
 {
-
+	$url = new moodle_url('/course/view.php', array('id' => $courseid));
+    redirect($url);
 }
 else if($data = $addform->get_data())
 {
+	$record = new stdClass();
+	$record->id = $pointsystemid;
+	$record->connective = $data->connective;
+	
+	$DB->update_record('points_system', $record);
+	
+	$url = new moodle_url('/course/view.php', array('id' => $courseid));
+    redirect($url);
 }
 else
 {

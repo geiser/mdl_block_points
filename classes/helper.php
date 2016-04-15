@@ -4,6 +4,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/availability/tests/fixtures/mock_info.php');
 require_once('event/points_earned.php');
+require_once($CFG->dirroot.'/blocks/game_points/lib.php');
 
 class block_game_points_helper {
 
@@ -54,6 +55,94 @@ class block_game_points_helper {
 			$psuserpoints = $DB->get_record_sql($sql, $params);
 			
 			if(isset($pointsystem->pointslimit) && $psuserpoints->points >= $pointsystem->pointslimit)
+			{
+				continue;
+			}
+			
+			$psrestrictions = $DB->get_records('points_system_restriction', array('pointsystemid' => $pointsystem->id));
+			$satisfies_restrictions = $pointsystem->connective == AND_CONNECTIVE ? true : false;
+			if(empty($psrestrictions))
+			{
+				$satisfies_restrictions = true;
+			}
+			else
+			{
+				foreach($psrestrictions as $psrestriction)
+				{
+					if($psrestriction->type == 0) // Restrição por pontos
+					{
+						$user_points = null;
+						if(isset($psrestriction->prblockid)) // Se a restrição for por pontos no bloco
+						{
+							$user_points = get_points($psrestriction->prblockid, $event->userid);
+						}
+						else // Se a restrição for por pontos em um sistema de pontos específico
+						{
+							$user_points = get_points_system_points($psrestriction->prpointsystemid, $event->userid);
+						}
+						
+						if(($psrestriction->properator == EQUAL && $user_points == $psrestriction->prpoints)
+							|| ($psrestriction->properator == GREATER && $user_points > $psrestriction->prpoints)
+							|| ($psrestriction->properator == LESS && $user_points < $psrestriction->prpoints)
+							|| ($psrestriction->properator == EQUALORGREATER && $user_points >= $psrestriction->prpoints)
+							|| ($psrestriction->properator == EQUALORLESS && $user_points <= $psrestriction->prpoints)
+							|| ($psrestriction->properator == BETWEEN && ($user_points >= $psrestriction->prpoints || $user_points <= $psrestriction->prpointsbetween))) // Se satisfaz a condição
+						{
+							if($pointsystem->connective == OR_CONNECTIVE) // E se o conectivo for OR
+							{
+								$satisfies_restrictions = true;
+								break;
+							}
+						}
+						else // Se não satisfaz a condição
+						{
+							if($pointsystem->connective == AND_CONNECTIVE) // E se o conectivo for AND
+							{
+								$satisfies_restrictions = false;
+								break;
+							}
+						}
+					}
+					else // Restrição por conteúdo desbloqueado
+					{
+						$sql = "SELECT count(u.id) as times
+							FROM
+								{content_unlock_log} u
+							INNER JOIN {logstore_standard_log} l ON u.logid = l.id
+							WHERE l.userid = :userid
+								AND  u.unlocksystemid = :unlocksystemid
+							GROUP BY l.userid";
+						$params['unlocksystemid'] = $psrestriction->urunlocksystemid;
+						$params['userid'] = $event->userid;
+						
+						$times = $DB->get_field_sql($sql, $params);
+
+						if(!isset($times))
+						{
+							$times = 0;
+						}
+						
+						if(($psrestriction->urmust && $times > 0) || (!$psrestriction->urmust && $times == 0)) // Se satisfaz a condição
+						{
+							if($pointsystem->connective == OR_CONNECTIVE) // E se o conectivo for OR
+							{
+								$satisfies_restrictions = true;
+								break;
+							}
+						}
+						else // Se não satisfaz a condição
+						{
+							if($pointsystem->connective == AND_CONNECTIVE) // E se o conectivo for AND
+							{
+								$satisfies_restrictions = false;
+								break;
+							}
+						}
+					}
+				}
+			}
+				
+			if(!$satisfies_restrictions)
 			{
 				continue;
 			}

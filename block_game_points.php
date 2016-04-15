@@ -49,22 +49,6 @@ class block_game_points extends block_base
 				$eventsarray = get_events_list();
 				$pss = $DB->get_records('points_system', array('deleted' => 0, 'blockinstanceid' => $this->instance->id));
 				
-				/*$pss = null;
-				if(is_null($this->page->cm->modname))
-				{
-					$pss = $DB->get_records('points_system', array('deleted' => 0, 'blockinstanceid' => $this->instance->id));
-				}
-				else
-				{
-					$sql = "SELECT *
-					FROM
-						{points_system} p
-					WHERE p.deleted = 0
-						AND p.blockinstanceid = " . $this->instance->id . "
-						AND p.conditionpoints LIKE '%" . $this->page->cm->modname . "%'";
-					
-					$pss = $DB->get_records_sql($sql);
-				}*/
 				if(!empty($pss))
 				{
 					$pointslist = '';
@@ -91,6 +75,95 @@ class block_game_points extends block_base
 						$psuserpoints = $DB->get_record_sql($sql, $params);
 						
 						if(isset($pointsystem->pointslimit) && $psuserpoints->points >= $pointsystem->pointslimit)
+						{
+							continue;
+						}
+						
+						$psrestrictions = $DB->get_records('points_system_restriction', array('pointsystemid' => $pointsystem->id));
+						$satisfies_restrictions = $pointsystem->connective == AND_CONNECTIVE ? true : false;
+						if(empty($psrestrictions))
+						{
+							$satisfies_restrictions = true;
+						}
+						else
+						{
+							foreach($psrestrictions as $psrestriction)
+							{
+								if($psrestriction->type == 0) // Restrição por pontos
+								{
+									$user_points = null;
+									if(isset($psrestriction->prblockid)) // Se a restrição for por pontos no bloco
+									{
+										$user_points = get_points($psrestriction->prblockid, $USER->id);
+									}
+									else // Se a restrição for por pontos em um sistema de pontos específico
+									{
+										$user_points = get_points_system_points($psrestriction->prpointsystemid, $USER->id);
+									}
+									
+									
+									if(($psrestriction->properator == EQUAL && $user_points == $psrestriction->prpoints)
+										|| ($psrestriction->properator == GREATER && $user_points > $psrestriction->prpoints)
+										|| ($psrestriction->properator == LESS && $user_points < $psrestriction->prpoints)
+										|| ($psrestriction->properator == EQUALORGREATER && $user_points >= $psrestriction->prpoints)
+										|| ($psrestriction->properator == EQUALORLESS && $user_points <= $psrestriction->prpoints)
+										|| ($psrestriction->properator == BETWEEN && ($user_points >= $psrestriction->prpoints || $user_points <= $psrestriction->prpointsbetween))) // Se satisfaz a condição
+									{
+										if($pointsystem->connective == OR_CONNECTIVE) // E se o conectivo for OR
+										{
+											$satisfies_restrictions = true;
+											break;
+										}
+									}
+									else // Se não satisfaz a condição
+									{
+										if($pointsystem->connective == AND_CONNECTIVE) // E se o conectivo for AND
+										{
+											$satisfies_restrictions = false;
+											break;
+										}
+									}
+								}
+								else // Restrição por conteúdo desbloqueado
+								{
+									$sql = "SELECT count(u.id) as times
+										FROM
+											{content_unlock_log} u
+										INNER JOIN {logstore_standard_log} l ON u.logid = l.id
+										WHERE l.userid = :userid
+											AND  u.unlocksystemid = :unlocksystemid
+										GROUP BY l.userid";
+									$params['unlocksystemid'] = $psrestriction->urunlocksystemid;
+									$params['userid'] = $USER->id;
+									
+									$times = $DB->get_field_sql($sql, $params);
+
+									if(!isset($times))
+									{
+										$times = 0;
+									}
+									
+									if(($psrestriction->urmust && $times > 0) || (!$psrestriction->urmust && $times == 0)) // Se satisfaz a condição
+									{
+										if($pointsystem->connective == OR_CONNECTIVE) // E se o conectivo for OR
+										{
+											$satisfies_restrictions = true;
+											break;
+										}
+									}
+									else // Se não satisfaz a condição
+									{
+										if($pointsystem->connective == AND_CONNECTIVE) // E se o conectivo for AND
+										{
+											$satisfies_restrictions = false;
+											break;
+										}
+									}
+								}
+							}
+						}
+							
+						if(!$satisfies_restrictions)
 						{
 							continue;
 						}
@@ -184,7 +257,7 @@ class block_game_points extends block_base
 			
 			if($showblock)
 			{
-				$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $this->get_points($this->instance->id, $USER->id) . '</font></center>';
+				$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . get_points($this->instance->id, $USER->id) . '</font></center>';
 				
 				if($this->page->course->id != 1) // Pagina de curso
 				{
@@ -238,7 +311,7 @@ class block_game_points extends block_base
 		}
 		else
 		{
-			$this->content->text = 'Você não é um estudante neste contexto!<br>Seus pontos: <br><p align="center"><font size="28">' . $this->get_points($this->instance->id, $USER->id) . '</font></center>';
+			$this->content->text = 'Você não é um estudante neste contexto!<br>Seus pontos: <br><p align="center"><font size="28">' . get_points($this->instance->id, $USER->id) . '</font></center>';
 		}
 		
 		return $this->content;
@@ -278,53 +351,6 @@ class block_game_points extends block_base
 		}
 		
 		return true;
-	}
-	
-	private function get_block_points($blockid, $userid)
-	{
-		global $DB;
-		
-		$sql = "SELECT sum(p.points) as points
-			FROM
-				{points_log} p
-			INNER JOIN {logstore_standard_log} l ON p.logid = l.id
-			INNER JOIN {points_system} s ON p.pointsystemid = s.id
-			WHERE l.userid = :userid
-				AND  s.blockinstanceid = :blockinstanceid
-			GROUP BY l.userid";
-			
-		$params['userid'] = $userid;
-		$params['blockinstanceid'] = $blockid;
-
-		$points = $DB->get_record_sql($sql, $params);
-
-		if(empty($points))
-		{
-			$points = new stdClass();
-			$points->points = 0;
-		}
-		
-		return $points->points;
-	}
-	
-	private function get_points($blockid, $userid)
-	{
-		global $DB;
-
-		$points = $this->get_block_points($blockid, $userid);
-		
-		$links = $DB->get_records('points_link', array('blockinstanceid' => $blockid), '', 'accfromblockinstanceid');
-		if(empty($links))
-		{
-			return $points;
-		}
-		
-		foreach($links as $link)
-		{
-			$points += $this->get_points($link->accfromblockinstanceid, $userid);
-		}
-		
-		return $points;
 	}
 	
 	private function get_groupmode()
@@ -372,8 +398,7 @@ class block_game_points extends block_base
 	{
 		global $USER, $DB;
 		
-		//$detailedview = (isset($this->config->usedetailedview[$USER->id]) ? (bool)$this->config->usedetailedview[$USER->id] : false);
-		$detailedview = true;
+		$detailedview = (isset($this->config->usedetailedview) ? (bool)$this->config->usedetailedview : false);
 		
 		$message = '<p align="left">';
 		

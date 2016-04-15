@@ -70,6 +70,22 @@ else if($data = $addform->get_data())
 	$record->processorid = $USER->id;
 	$DB->insert_record('points_system_processor', $record);
 	
+	// Update restrictions to match the new points system id
+	$sql = 'UPDATE {points_system_restriction}
+				SET pointsystemid = :newpointsystemid
+				WHERE pointsystemid = :oldpointsystemid';
+	$params['newpointsystemid'] = $psid;
+	$params['oldpointsystemid'] = $oldpointsystem->id;
+	$DB->execute($sql, $params);
+	
+	// Update restrictions to match the new restriction points system id
+	$sql = 'UPDATE {points_system_restriction}
+				SET prpointsystemid = :newpointsystemid
+				WHERE prpointsystemid = :oldpointsystemid';
+	$params['newpointsystemid'] = $psid;
+	$params['oldpointsystemid'] = $oldpointsystem->id;
+	$DB->execute($sql, $params);
+	
     $url = new moodle_url('/my/index.php');
     redirect($url);
 }
