@@ -64,7 +64,7 @@ class block_game_points_form extends moodleform {
 		}
 		
 		// Common group settings
-		$mform->addElement('header', 'modstandardelshdr', get_string('modstandardels', 'form'));
+		$mform->addElement('header', 'modstandardelshdr', get_string('addpointsystemgroupsettings', 'block_game_points'));
 
 		$options = array(NOGROUPS       => get_string('groupsnone'),
 						 SEPARATEGROUPS => get_string('groupsseparate'),

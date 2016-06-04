@@ -35,9 +35,17 @@ define("OR_CONNECTIVE", 1);
 
 function get_events_list($showeventname = false)
 {
+	global $DB;
+	
 	$eventsarray = array();
 	
 	$eventsarray['\block_game_points\event\points_earned'] = ($showeventname === true ? (\block_game_points\event\points_earned::get_name() . " (\block_game_points\event\points_earned)") : \block_game_points\event\points_earned::get_name());
+	
+	$game_achievements_installed = $DB->record_exists('block', array('name' => 'game_achievements'));
+	if($game_achievements_installed)
+	{
+		$eventsarray['\block_game_achievements\event\achievement_reached'] = ($showeventname === true ? (\block_game_achievements\event\achievement_reached::get_name() . " (\block_game_achievements\event\achievement_reached)") : \block_game_achievements\event\achievement_reached::get_name());
+	}
 	
 	$eventslist = report_eventlist_list_generator::get_non_core_event_list();
 	foreach($eventslist as $value)

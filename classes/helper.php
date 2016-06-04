@@ -125,7 +125,7 @@ class block_game_points_helper {
 							}
 						}
 					}
-					else // Restrição por conteúdo desbloqueado
+					else if($psrestriction->type == 1) // Restrição por conteúdo desbloqueado
 					{
 						$sql = "SELECT count(u.id) as times
 							FROM
@@ -145,6 +145,26 @@ class block_game_points_helper {
 						}
 						
 						if(($psrestriction->urmust && $times > 0) || (!$psrestriction->urmust && $times == 0)) // Se satisfaz a condição
+						{
+							if($pointsystem->connective == OR_CONNECTIVE) // E se o conectivo for OR
+							{
+								$satisfies_restrictions = true;
+								break;
+							}
+						}
+						else // Se não satisfaz a condição
+						{
+							if($pointsystem->connective == AND_CONNECTIVE) // E se o conectivo for AND
+							{
+								$satisfies_restrictions = false;
+								break;
+							}
+						}
+					}
+					else // Restrição por conquista atingida
+					{
+						$unlocked_achievement = $DB->record_exists('achievements_log', array('userid' => $event->userid, 'achievementid' => $psrestriction->arachievementid));
+						if($unlocked_achievement) // Se satisfaz a condição
 						{
 							if($pointsystem->connective == OR_CONNECTIVE) // E se o conectivo for OR
 							{
@@ -259,7 +279,7 @@ class block_game_points_helper {
 			$params['anonymous'] = $event->anonymous;
 			$params['timecreated'] = $event->timecreated;
 
-			$logid = $reader->get_events_select($selectwhere, $params);
+			$logid = $reader->get_events_select($selectwhere, $params, '', 0, 0);
 			$logid = array_keys($logid)[0];
 			
 			$record = new stdClass();

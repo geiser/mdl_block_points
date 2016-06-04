@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
  
 /**
- * Points block english language translation.
+ * Points block potuguese language translation.
  *
  * @package    block_game_points
  * @copyright  20016 Loys Henrique Saccomano Gibertoni
@@ -44,3 +44,4 @@ $string['linkdeleteheading'] = 'Remover acúmulo de pontos';
 $string['linkdeletemessage'] = 'Tem certeza que deseja remover o acúmulo de pontos?';
 $string['linkdeletebutton'] = 'Remover';
 $string['eventpointsearned'] = 'Pontos ganhos';
+$string['addpointsystemgroupsettings'] = 'Configurações para grupos';

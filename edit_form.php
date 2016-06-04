@@ -30,8 +30,6 @@ class block_game_points_edit_form extends block_edit_form {
 	{
  		global $COURSE, $DB, $USER;
  
-		$mform->addElement('header', 'configviewheader', 'Exibição de grupos');
- 
 		$context = context_course::instance($COURSE->id);
 		if(has_capability('block/game_points:addpointsystem', $context))
 		{

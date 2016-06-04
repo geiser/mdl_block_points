@@ -77,7 +77,7 @@ class block_game_points_restrictionmanage_form extends moodleform
 				$url = new moodle_url('/blocks/game_points/restrictiondelete.php', array('restrictionid' => $restriction->id, 'courseid' => $COURSE->id));
 				$html .= '<tr><td>Os pontos do aluno no' . (isset($restriction->prblockid) ? ' bloco ' . $instance->title  : ' sistema de pontos ' . $restriction->prpointsystemid . ' (bloco ' . $instance->title . ')' ) . ' devem ser ' . $operators_array[$restriction->properator] . ' ' . $restriction->prpoints . ($restriction->properator == BETWEEN ? (' e ' . $restriction->prpointsbetween) : '') . ' pontos' . '</td><td>' . html_writer::link($url, 'Remover') . '</td></tr>';
 			}
-			else // Restrição por conteúdo desbloqueado
+			else if($restriction->type == 1) // Restrição por conteúdo desbloqueado
 			{
 				$unlock_system = $DB->get_record('content_unlock_system', array('id' => $restriction->urunlocksystemid));
 				
@@ -90,6 +90,16 @@ class block_game_points_restrictionmanage_form extends moodleform
 				
 				$url = new moodle_url('/blocks/game_points/restrictiondelete.php', array('restrictionid' => $restriction->id, 'courseid' => $COURSE->id));
 				$html .= '<tr><td>O aluno ' . ($restriction->urmust ? 'deve' : 'não deve') . ' ter ' . ($unlock_system->coursemodulevisibility ? 'desbloqueado' : 'bloqueado') . ' o recurso/atividade ' . $cm->name . ' (bloco ' . $instance->title . ')' . '</td><td>' . html_writer::link($url, 'Remover') . '</td></tr>';
+			}
+			else // Restrição por conquista atingida
+			{
+				$achievement = $DB->get_record('achievements', array('id' => $restriction->arachievementid));
+				
+				$block_info = $DB->get_record('block_instances', array('id' => $achievement->blockinstanceid));
+				$instance = block_instance('game_achievements', $block_info);
+				
+				$url = new moodle_url('/blocks/game_points/restrictiondelete.php', array('restrictionid' => $restriction->id, 'courseid' => $COURSE->id));
+				$html .= '<tr><td>O aluno deve ter atingido a conquista ' . $achievement->id  . ' (bloco ' . $instance->title . ')</td></tr>';
 			}
 		}
 		$url = new moodle_url('/blocks/game_points/restrictionadd.php', array('pointsystemid' => $this->pointsystemid, 'courseid' => $COURSE->id));

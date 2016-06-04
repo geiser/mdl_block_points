@@ -80,10 +80,14 @@ else if($data = $addform->get_data())
 		$record->prpoints = $data->points_restriction_points;
 		$record->prpointsbetween = isset($data->points_restriction_points_between) ? $data->points_restriction_points_between : null;
 	}
-	else // Se for restrição por desbloqueio de conteúdo
+	else if($data->restriction_type == 1) // Se for restrição por desbloqueio de conteúdo
 	{
 		$record->urmust = $data->unlock_restriction_must;
 		$record->urunlocksystemid = $data->unlock_restriction_unlocksystemid;
+	}
+	else // Se for restrição por conquista atingida
+	{
+		$record->arachievementid = $data->achievements_restriction_achievementid;
 	}
 
 	$DB->insert_record('points_system_restriction', $record);
