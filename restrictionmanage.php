@@ -61,6 +61,7 @@ else if($data = $addform->get_data())
 {
 	$record = new stdClass();
 	$record->id = $pointsystemid;
+	$record->restrictions = $data->availabilityconditionsjson;;
 	$record->connective = $data->connective;
 	
 	$DB->update_record('points_system', $record);

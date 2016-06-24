@@ -54,15 +54,6 @@ class block_game_points_form extends moodleform {
 		
 		$mform->addElement('text', 'pointslimit', 'Limite de pontos');
 		
-		// Restrict access
-		if(!empty($CFG->enableavailability))
-		{
-			$mform->addElement('header', 'availabilityconditionsheader', get_string('restrictaccess', 'availability'));
-			$mform->addElement('textarea', 'availabilityconditionsjson', get_string('accessrestrictions', 'availability'));
-
-			\core_availability\frontend::include_all_javascript($COURSE, null);
-		}
-		
 		// Common group settings
 		$mform->addElement('header', 'modstandardelshdr', get_string('addpointsystemgroupsettings', 'block_game_points'));
 

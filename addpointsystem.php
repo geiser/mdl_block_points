@@ -66,7 +66,7 @@ else if($data = $addform->get_data())
 	$record->eventdescription = empty($data->description) ? null : $data->description;
 	$record->pointslimit = empty($data->pointslimit) ? null : $data->pointslimit;
 	$record->blockinstanceid = $blockid;
-	$record->restrictions = empty($data->availabilityconditionsjson) ? null : $data->availabilityconditionsjson;
+	$record->restrictions = '{"op":"&","c":[],"showc":[]}';
 	$record->groupmode = $data->groupmode;
 	$record->groupingid = ($data->groupmode == NOGROUPS || $data->groupingid == 0) ? null : $data->groupingid;
 	$psid = $DB->insert_record('points_system', $record);

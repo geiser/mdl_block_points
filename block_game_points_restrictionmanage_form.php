@@ -48,6 +48,16 @@ class block_game_points_restrictionmanage_form extends moodleform
 		
 		$mform =& $this->_form;
  
+		$pointsystem = $DB->get_record('points_system', array('id' => $this->pointsystemid));
+ 
+		// Restrictions
+		$mform->addElement('header', 'availabilityconditionsheader', get_string('restrictaccess', 'availability'));
+		$mform->addElement('textarea', 'availabilityconditionsjson', get_string('accessrestrictions', 'availability'));
+		$mform->setDefault('availabilityconditionsjson', $pointsystem->restrictions);
+		\core_availability\frontend::include_all_javascript($COURSE, null);
+ 
+		$mform->addElement('html', '<hr></hr>');
+
 		$connective = $DB->get_field('points_system', 'connective', array('id' => $this->pointsystemid));
 		$connectives_array = array(AND_CONNECTIVE => 'E', OR_CONNECTIVE => 'Ou');
 		$select = $mform->addElement('select', 'connective', 'Conectivo', $connectives_array);
@@ -99,7 +109,7 @@ class block_game_points_restrictionmanage_form extends moodleform
 				$instance = block_instance('game_achievements', $block_info);
 				
 				$url = new moodle_url('/blocks/game_points/restrictiondelete.php', array('restrictionid' => $restriction->id, 'courseid' => $COURSE->id));
-				$html .= '<tr><td>O aluno deve ter atingido a conquista ' . $achievement->id  . ' (bloco ' . $instance->title . ')</td></tr>';
+				$html .= '<tr><td>O aluno deve ter atingido a conquista ' . $achievement->id  . ' (bloco ' . $instance->title . ')</td><td>' . html_writer::link($url, 'Remover') . '</td></tr>';
 			}
 		}
 		$url = new moodle_url('/blocks/game_points/restrictionadd.php', array('pointsystemid' => $this->pointsystemid, 'courseid' => $COURSE->id));
