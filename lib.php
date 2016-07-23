@@ -129,3 +129,41 @@ function get_points($blockid, $userid)
 	
 	return $points;
 }
+
+function get_block_group_points($blockid, $groupid)
+{
+	global $DB;
+	
+	$sql = "SELECT sum(l.points)
+				FROM {points_group_log} g
+					INNER JOIN {points_log} l ON l.id = g.pointslogid
+					INNER JOIN {points_system} s ON s.id = l.pointsystemid
+				WHERE g.groupid = :groupid
+					AND s.blockinstanceid = :blockinstanceid";
+	
+	$params['groupid'] = $groupid;
+	$params['blockinstanceid'] = $blockid;
+	
+	$grouppoints = $DB->get_field_sql($sql, $params);
+	
+	return (empty($grouppoints) ? 0 : $grouppoints);
+}
+
+function get_points_system_group_points($pointsystemid, $groupid)
+{
+	global $DB;
+	
+	$sql = "SELECT sum(l.points)
+				FROM {points_group_log} g
+					INNER JOIN {points_log} l ON l.id = g.pointslogid
+					INNER JOIN {points_system} s ON s.id = l.pointsystemid
+				WHERE g.groupid = :groupid
+					AND l.pointsystemid = :pointsystemid";
+	
+	$params['groupid'] = $groupid;
+	$params['pointsystemid'] = $pointsystemid;
+	
+	$grouppoints = $DB->get_field_sql($sql, $params);
+	
+	return (empty($grouppoints) ? 0 : $grouppoints);
+}
