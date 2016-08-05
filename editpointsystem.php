@@ -92,14 +92,14 @@ else if($data = $addform->get_data())
 	$record->processorid = $USER->id;
 	$DB->insert_record('points_system_processor', $record);
 	
-	// Update restrictions to match the new points system id
-	$sql = 'UPDATE {points_system_restriction}
-				SET pointsystemid = :newpointsystemid
-				WHERE pointsystemid = :oldpointsystemid';
-	$params['newpointsystemid'] = $psid;
-	$params['oldpointsystemid'] = $oldpointsystem->id;
-	$DB->execute($sql, $params);
-	
+	$points_system_restrictions = $DB->get_records('points_system_restriction', array('pointsystemid' => $oldpointsystem->id));
+	foreach($points_system_restrictions as $points_system_restriction)
+	{
+		unset($points_system_restriction->id);
+		$points_system_restriction->pointsystemid = $psid;
+		$DB->insert_record('points_system_restriction', $points_system_restriction);
+	}
+
 	// Update restrictions to match the new restriction points system id
 	$sql = 'UPDATE {points_system_restriction}
 				SET prpointsystemid = :newpointsystemid
