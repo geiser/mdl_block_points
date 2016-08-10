@@ -33,6 +33,42 @@ define("BETWEEN", 5);
 define("AND_CONNECTIVE", 0);
 define("OR_CONNECTIVE", 1);
 
+function validate_advanced_restrictions($pointsystem, $event)
+{
+	global $DB;
+
+	$validate = $pointsystem->advconnective == AND_CONNECTIVE ? true : false;
+
+	$restrictions = $DB->get_records('points_system_advrestriction', array('pointsystemid' => $pointsystem->id));
+	foreach($restrictions as $restriction)
+	{
+		$sql = 'SELECT COUNT(*) ' . $restriction->whereclause;
+		foreach($event as $property => $value)
+		{
+			$sql = str_replace("[" . $property . "]", is_null($value) ? "NULL" : "'" . $value . "'", $sql);
+		}
+		print_object($sql);
+		$count = $DB->count_records_sql($sql);
+
+		if(($restriction->trueif == 0 && $count == 0) || ($restriction->trueif == 1 && $count >= 1)) // If satisfies
+		{
+			if($pointsystem->advconnective == OR_CONNECTIVE) // If it uses an OR connective
+			{
+				return true;
+			}
+		}
+		else // If doesn't satisfy
+		{
+			if($pointsystem->advconnective == AND_CONNECTIVE) // If it uses an AND connective
+			{
+				return false;
+			}
+		}
+	}
+
+	return $validate;
+}
+
 function get_events_list($showeventname = false)
 {
 	global $DB;

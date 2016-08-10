@@ -49,6 +49,11 @@ class block_game_points_helper {
 				continue;
 			}
 			
+			if(!validate_advanced_restrictions($pointsystem, $event))
+			{
+				continue;
+			}
+
 			$blockcontextid = $DB->get_field('block_instances', 'parentcontextid', array('id' => $pointsystem->blockinstanceid));
 			if(!$blockcontextid) // Acontece se o bloco for apagado
 			{

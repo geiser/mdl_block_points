@@ -45,3 +45,22 @@ $string['linkdeletemessage'] = 'Tem certeza que deseja remover o acúmulo de pon
 $string['linkdeletebutton'] = 'Remover';
 $string['eventpointsearned'] = 'Pontos ganhos';
 $string['addpointsystemgroupsettings'] = 'Configurações para grupos';
+
+$string['restrictionaddheading'] = 'Adicionar restrição';
+$string['restrictiondeleteheading'] = 'Remover restrição';
+$string['restrictiondeletemessage'] = 'Tem certeza que deseja remover a restrição?';
+$string['restrictiondeletebutton'] = 'Remover';
+$string['restrictionmanageheading'] = 'Gerenciar restrições';
+$string['restrictionmanagesql'] = 'SQL';
+$string['restrictionmanagetrueif'] = 'Verdadeiro se';
+$string['restrictionmanagedelete'] = 'Remover';
+$string['restrictionmanageadd'] = 'Adicionar restrição avançada';
+$string['advancedrestrictionaddheading'] = 'Adicionar restrição avançada';
+$string['advancedrestrictionaddbutton'] = 'Adicionar';
+$string['advancedrestrictionaddselect'] = 'SELECT COUNT(*)';
+$string['advancedrestrictionaddtrueif'] = 'Verdadeiro se';
+$string['advancedrestrictionaddtrueifzero'] = 'COUNT = 0';
+$string['advancedrestrictionaddtrueifnotzero'] = 'COUNT >= 1';
+$string['advancedrestrictiondeleteheading'] = 'Remover restrição';
+$string['advancedrestrictiondeletemessage'] = 'Tem certeza que deseja remover a restrição?';
+$string['advancedrestrictiondeletebutton'] = 'Remover';

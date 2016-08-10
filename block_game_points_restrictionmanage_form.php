@@ -117,6 +117,36 @@ class block_game_points_restrictionmanage_form extends moodleform
 		
 		$mform->addElement('html', $html);
  
+		// Advanced restrictions
+		$mform->addElement('html', '<hr></hr>');
+
+		$advconnective = $DB->get_field('points_system', 'advconnective', array('id' => $this->pointsystemid));
+		$select = $mform->addElement('select', 'advconnective', 'Conectivo de restrições avançadas', $connectives_array);
+		$mform->addRule('advconnective', null, 'required', null, 'client');
+		$select->setSelected($advconnective);
+ 
+		$html = '<table>
+					<tr>
+						<th>' . get_string('restrictionmanagesql', 'block_game_points') . '</th>
+						<th>' . get_string('restrictionmanagetrueif', 'block_game_points') . '</th>
+						<th>' . get_string('restrictionmanagedelete', 'block_game_points') . '</th>
+					</tr>';
+		$restrictions = $DB->get_records('points_system_advrestriction', array('pointsystemid' => $this->pointsystemid));
+		foreach($restrictions as $restriction)
+		{
+			$url = new moodle_url('/blocks/game_points/advancedrestrictiondelete.php', array('restrictionid' => $restriction->id, 'courseid' => $COURSE->id));
+			$html .= '<tr>
+					 	<td>' . get_string('advancedrestrictionaddselect', 'block_game_points') . ' ' . $restriction->whereclause . '</td>
+						 <td>' . ($restriction->trueif == 0 ? get_string('advancedrestrictionaddtrueifzero', 'block_game_points') : get_string('advancedrestrictionaddtrueifnotzero', 'block_game_points')) . '</td>
+						<td>' . html_writer::link($url, get_string('restrictionmanagedelete', 'block_game_points')) . '</td>
+					 </tr>';
+		}
+		$url = new moodle_url('/blocks/game_points/advancedrestrictionadd.php', array('pointsystemid' => $this->pointsystemid, 'courseid' => $COURSE->id));
+		$html .= '</table>' . html_writer::link($url, get_string('restrictionmanageadd', 'block_game_points'));
+
+		$mform->addElement('html', $html);
+ 
+		// Hidden elements
         $mform->addElement('hidden', 'pointsystemid');
 		$mform->addElement('hidden', 'courseid');
 		

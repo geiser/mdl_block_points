@@ -15,17 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
  
 /**
- * Points system restrictions management page.
+ * Add points system advanced restriction page.
  *
  * @package    block_game_points
- * @copyright  20016 Loys Henrique Saccomano Gibertoni
+ * @copyright  2016 Loys Henrique Saccomano Gibertoni
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 global $DB, $OUTPUT, $PAGE, $USER;
  
 require_once('../../config.php');
-require_once('block_game_points_restrictionmanage_form.php');
+require_once('block_game_points_advancedrestrictionadd_form.php');
  
 global $DB;
  
@@ -42,33 +42,31 @@ if (!$course = $DB->get_record('course', array('id' => $courseid))) {
  
 require_login($course);
  
-$PAGE->set_url('/blocks/game_points/restrictionmanage.php', array('id' => $courseid));
+$PAGE->set_url('/blocks/game_points/advancedrestrictionadd.php', array('id' => $courseid));
 $PAGE->set_pagelayout('standard');
-$PAGE->set_heading(get_string('restrictionmanageheading', 'block_game_points'));
-$PAGE->set_title(get_string('restrictionmanageheading', 'block_game_points'));
+$PAGE->set_heading(get_string('advancedrestrictionaddheading', 'block_game_points')); 
+$PAGE->set_title(get_string('advancedrestrictionaddheading', 'block_game_points'));
 
 $settingsnode = $PAGE->settingsnav->add(get_string('gamepointssettings', 'block_game_points'));
-$editurl = new moodle_url('/blocks/game_points/restrictionmanage.php', array('id' => $id, 'courseid' => $courseid, 'pointsystemid' => $pointsystemid));
-$editnode = $settingsnode->add(get_string('restrictionmanageheading', 'block_game_points'), $editurl);
+$editurl = new moodle_url('/blocks/game_points/advancedrestrictionadd.php', array('id' => $id, 'courseid' => $courseid, 'pointsystemid' => $pointsystemid));
+$editnode = $settingsnode->add(get_string('advancedrestrictionaddheading', 'block_game_points'), $editurl);
 $editnode->make_active();
 
-$addform = new block_game_points_restrictionmanage_form($pointsystemid);
+$addform = new block_game_points_advancedrestrictionadd_form();
 if($addform->is_cancelled())
 {
-	$url = new moodle_url('/course/view.php', array('id' => $courseid));
+    $url = new moodle_url('/blocks/game_points/restrictionmanage.php', array('courseid' => $courseid, 'pointsystemid' => $pointsystemid));
     redirect($url);
 }
 else if($data = $addform->get_data())
 {
 	$record = new stdClass();
-	$record->id = $pointsystemid;
-	$record->restrictions = $data->availabilityconditionsjson;;
-	$record->connective = $data->connective;
-	$record->advconnective = $data->advconnective;
+	$record->pointsystemid = $pointsystemid;
+	$record->whereclause = $data->whereclause;
+	$record->trueif = $data->trueif;
+	$DB->insert_record('points_system_advrestriction', $record);
 	
-	$DB->update_record('points_system', $record);
-	
-	$url = new moodle_url('/course/view.php', array('id' => $courseid));
+    $url = new moodle_url('/blocks/game_points/restrictionmanage.php', array('courseid' => $courseid, 'pointsystemid' => $pointsystemid));
     redirect($url);
 }
 else

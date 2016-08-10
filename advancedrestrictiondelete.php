@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
  
 /**
- * Points system restrictions management page.
+ * Delete points system restriction page.
  *
  * @package    block_game_points
  * @copyright  20016 Loys Henrique Saccomano Gibertoni
@@ -25,13 +25,11 @@
 global $DB, $OUTPUT, $PAGE, $USER;
  
 require_once('../../config.php');
-require_once('block_game_points_restrictionmanage_form.php');
- 
-global $DB;
+require_once('block_game_points_advancedrestrictiondelete_form.php');
  
 // Required variables
 $courseid = required_param('courseid', PARAM_INT);
-$pointsystemid = required_param('pointsystemid', PARAM_INT);
+$restrictionid = required_param('restrictionid', PARAM_INT);
  
 // Optional variables
 $id = optional_param('id', 0, PARAM_INT);
@@ -42,43 +40,41 @@ if (!$course = $DB->get_record('course', array('id' => $courseid))) {
  
 require_login($course);
  
-$PAGE->set_url('/blocks/game_points/restrictionmanage.php', array('id' => $courseid));
+$PAGE->set_url('/blocks/game_points/advancedrestrictiondelete.php', array('id' => $courseid));
 $PAGE->set_pagelayout('standard');
-$PAGE->set_heading(get_string('restrictionmanageheading', 'block_game_points'));
-$PAGE->set_title(get_string('restrictionmanageheading', 'block_game_points'));
+$PAGE->set_heading(get_string('advancedrestrictiondeleteheading', 'block_game_points')); 
+$PAGE->set_title(get_string('advancedrestrictiondeleteheading', 'block_game_points'));
 
 $settingsnode = $PAGE->settingsnav->add(get_string('gamepointssettings', 'block_game_points'));
-$editurl = new moodle_url('/blocks/game_points/restrictionmanage.php', array('id' => $id, 'courseid' => $courseid, 'pointsystemid' => $pointsystemid));
-$editnode = $settingsnode->add(get_string('restrictionmanageheading', 'block_game_points'), $editurl);
+$editurl = new moodle_url('/blocks/game_points/advancedrestrictiondelete.php', array('id' => $id, 'courseid' => $courseid, 'restrictionid' => $restrictionid));
+$editnode = $settingsnode->add(get_string('advancedrestrictiondeleteheading', 'block_game_points'), $editurl);
 $editnode->make_active();
 
-$addform = new block_game_points_restrictionmanage_form($pointsystemid);
-if($addform->is_cancelled())
+$deleteform = new block_game_points_advancedrestrictiondelete_form();
+if($deleteform->is_cancelled())
 {
-	$url = new moodle_url('/course/view.php', array('id' => $courseid));
+	$psid = $DB->get_field('points_system_advrestriction', 'pointsystemid', array('id' => $restrictionid));
+	
+    $url = new moodle_url('/blocks/game_points/restrictionmanage.php', array('courseid' => $courseid, 'pointsystemid' => $psid));
     redirect($url);
 }
-else if($data = $addform->get_data())
+else if($data = $deleteform->get_data())
 {
-	$record = new stdClass();
-	$record->id = $pointsystemid;
-	$record->restrictions = $data->availabilityconditionsjson;;
-	$record->connective = $data->connective;
-	$record->advconnective = $data->advconnective;
+	$psid = $DB->get_field('points_system_advrestriction', 'pointsystemid', array('id' => $restrictionid));
 	
-	$DB->update_record('points_system', $record);
+	$DB->delete_records('points_system_advrestriction', array('id' => $restrictionid));
 	
-	$url = new moodle_url('/course/view.php', array('id' => $courseid));
+    $url = new moodle_url('/blocks/game_points/restrictionmanage.php', array('courseid' => $courseid, 'pointsystemid' => $psid));
     redirect($url);
 }
 else
 {
-	$toform['pointsystemid'] = $pointsystemid;
+	$toform['restrictionid'] = $restrictionid;
 	$toform['courseid'] = $courseid;
-	$addform->set_data($toform);
+	$deleteform->set_data($toform);
 	$site = get_site();
 	echo $OUTPUT->header();
-	$addform->display();
+	$deleteform->display();
 	echo $OUTPUT->footer();
 }
 
