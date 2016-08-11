@@ -69,8 +69,8 @@ class block_game_points extends block_base
 			if($this->page->course->id != 1) // Pagina de curso
 			{
 				$eventsarray = get_events_list();
-				$pss = $DB->get_records('points_system', array('deleted' => 0, 'blockinstanceid' => $this->instance->id));
-				
+				$pss = $this->get_points_systems();
+					
 				if(!empty($pss))
 				{
 					$pointslist = '';
@@ -379,6 +379,25 @@ class block_game_points extends block_base
         return true;
     }
 	
+	private function get_points_systems($blockinstanceid = 0)
+	{
+		global $DB;
+
+		if(!$blockinstanceid)
+		{
+			$blockinstanceid = $this->instance->id;
+		}
+		$points_systems = $DB->get_records('points_system', array('deleted' => 0, 'blockinstanceid' => $blockinstanceid));
+		
+		$links = $DB->get_records('points_link', array('blockinstanceid' => $blockinstanceid));
+		foreach($links as $link)
+		{
+			$points_systems += $this->get_points_systems($link->accfromblockinstanceid);
+		}
+
+		return $points_systems;
+	}
+
 	private function is_available($restrictions, $courseid, $userid)
 	{
 		global $DB;
