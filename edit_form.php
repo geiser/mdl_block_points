@@ -28,7 +28,7 @@ class block_game_points_edit_form extends block_edit_form {
  
     protected function specific_definition($mform)
 	{
- 		global $COURSE, $DB, $USER;
+ 		global $COURSE, $DB, $USER, $OUTPUT;
  
 		$context = context_course::instance($COURSE->id);
 		if(has_capability('block/game_points:addpointsystem', $context))
@@ -99,6 +99,53 @@ class block_game_points_edit_form extends block_edit_form {
 			}
 			$url = new moodle_url('/blocks/game_points/linkadd.php', array('blockid' => $this->block->instance->id, 'courseid' => $COURSE->id));
 			$html = $html . '</table>' . html_writer::link($url, get_string('linkaddpage', 'block_game_points'));
+			$mform->addElement('html', $html);
+
+			$mform->addElement('header', 'configheader', get_string('pointsmanageheading', 'block_game_points'));
+
+			$sql = "SELECT p.id as id,
+						p.pointsystemid as pointsystemid,
+						l.userid as userid,
+						s.conditionpoints as event,
+						s.eventdescription as eventdescription,
+						p.points as points,
+						l.timecreated as timecreated
+					FROM {points_log} p
+						INNER JOIN {logstore_standard_log} l ON p.logid = l.id
+						INNER JOIN {points_system} s ON p.pointsystemid = s.id
+					WHERE s.blockinstanceid = :blockinstanceid
+					ORDER BY s.deleted ASC,
+						l.timecreated DESC";
+			$params['blockinstanceid'] = $this->block->instance->id;
+			$points_logs = $DB->get_records_sql($sql, $params);
+
+			$html = '<table>
+						<tr>
+							<th>' . get_string('pointsmanagename', 'block_game_points') . '</th>
+							<th>' . get_string('pointsmanageevent', 'block_game_points') . '</th>
+							<th>' . get_string('pointsmanagepointssystem', 'block_game_points') . '</th>
+							<th>' . get_string('pointsmanagepoints', 'block_game_points') . '</th>
+							<th>' . get_string('pointsmanagedate', 'block_game_points') . '</th>
+							<th>' . get_string('pointsmanagedelete', 'block_game_points') . '</th>
+						</tr>';
+			foreach($points_logs as $points_log)
+			{
+				$info = $DB->get_record('user', array('id' => $points_log->userid));
+                $name_field = $OUTPUT->user_picture($info, array('size' => 24, 'alttext' => false)) . ' ' . $info->firstname . ' ' . $info->lastname;
+				$eventdescription = empty($points_log->eventdescription) ? $eventsarray[$points_log->event] : $points_log->eventdescription;
+				$delete_url = new moodle_url('/blocks/game_points/pointsdelete.php', array('pointslogid' => $points_log->id, 'courseid' => $COURSE->id));
+
+				$html .= '<tr>
+							<td>' . $name_field . '</td>
+							<td>' . $eventdescription . '</td>
+							<td>' . $points_log->pointsystemid . '</td>
+							<td>' . $points_log->points . '</td>
+							<td>' . date('H:i, d/m/Y', $points_log->timecreated) . '</td>
+							<td>' . html_writer::link($delete_url, get_string('pointsmanagedelete', 'block_game_points')) . '</td>
+						</tr>';
+			}
+			$html .= '</table>';
+
 			$mform->addElement('html', $html);
 		}			
 	}
