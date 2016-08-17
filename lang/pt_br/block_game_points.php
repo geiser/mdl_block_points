@@ -73,7 +73,8 @@ $string['pointsmanageevent'] = 'Evento';
 $string['pointsmanagepointssystem'] = 'Sistema de pontos';
 $string['pointsmanagepoints'] = 'Pontos';
 $string['pointsmanagedate'] = 'Data';
+$string['pointsmanageedit'] = 'Editar';
 $string['pointsmanagedelete'] = 'Remover';
-
-
-
+$string['pointseditheading'] = 'Editar pontos';
+$string['pointseditpoints'] = 'Pontos';
+$string['pointseditbutton'] = 'Salvar';

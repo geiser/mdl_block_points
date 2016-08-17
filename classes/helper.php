@@ -37,7 +37,7 @@ class block_game_points_helper {
         if(!block_game_points_helper::is_student($event->userid)) {
             return;
         }
-				
+
 		$pss = $DB->get_records_sql("SELECT * FROM {points_system} WHERE deleted = ? AND ".$DB->sql_compare_text('conditionpoints')." = ". $DB->sql_compare_text('?'), array('deleted' => 0, 'conditionpoints' => $event->eventname));
 		
 		$got_points = false;
@@ -62,7 +62,7 @@ class block_game_points_helper {
 			
 			$blockcontext = context::instance_by_id($blockcontextid);
 			$context = context::instance_by_id($event->contextid);
-			if(strpos($context->path, $blockcontext->path) !== 0) // Se o o contexto atual não estiver na hierarquia do contexto do bloco
+			if(strpos($context->path, $blockcontext->path) !== 0 && $blockcontext->instanceid != SITEID) // Se o o contexto atual não estiver na hierarquia do contexto do bloco
 			{
 				continue;
 			}
@@ -292,7 +292,7 @@ class block_game_points_helper {
 			$record->pointsystemid = $pointsystem->id;
 			$record->points = $points;
 			$pointslogid = $DB->insert_record('points_log', $record);
-			
+
 			if($pointsystem->groupmode != NOGROUPS)
 			{
 				$groups = null;				

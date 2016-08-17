@@ -65,13 +65,37 @@ class block_game_points_edit_form extends block_edit_form {
 			$params['blockinstanceid'] = $this->block->instance->id;
 			$points_systems = $DB->get_records_sql($sql, $params);
 			
-			$html = '<table><tr><th>ID</th><th>Tipo</th><th>Condições</th><th>Valor</th><th>Descrição</th><th>Limite de pontos</th><th>Gerenciar restrições</th><th>Editar</th><th>Remover</th></tr>';
+			$html = '<table>
+						<tr>
+							<th>ID</th>
+							<th>Nome</th>
+							<th>Tipo</th>
+							<th>Condições</th>
+							<th>Valor</th>
+							<th>Descrição</th>
+							<th>Limite de pontos</th>
+							<th>Gerenciar restrições</th>
+							<th>Editar</th>
+							<th>Remover</th>
+						</tr>';
 			foreach($points_systems as $value)
 			{
 				$urlmanagerestrictions = new moodle_url('/blocks/game_points/restrictionmanage.php', array('courseid' => $COURSE->id, 'pointsystemid' => $value->id));
 				$urledit = new moodle_url('/blocks/game_points/editpointsystem.php', array('courseid' => $COURSE->id, 'pointsystemid' => $value->id));
 				$urlremove = new moodle_url('/blocks/game_points/deletepointsystem.php', array('courseid' => $COURSE->id, 'pointsystemid' => $value->id));
-				$html = $html . '<tr><td>' . $value->id . '</td><td>' . $typesarray[$value->type] . '</td><td>' . $eventsarray[$value->conditionpoints] . '</td><td>' . $value->valuepoints . '</td><td>' . $value->eventdescription . '</td><td>' . $value->pointslimit . '</td><td>' . html_writer::link($urlmanagerestrictions, 'Gerenciar restrições') . '</td><td>' . html_writer::link($urledit, 'Editar') . '</td><td>' . html_writer::link($urlremove, 'Remover') . '</td></tr>';
+				
+				$html .= '<tr>
+							<td>' . $value->id . '</td>
+							<td>' . $value->name . '</td>
+							<td>' . $typesarray[$value->type] . '</td>
+							<td>' . $eventsarray[$value->conditionpoints] . '</td>
+							<td>' . $value->valuepoints . '</td>
+							<td>' . $value->eventdescription . '</td>
+							<td>' . $value->pointslimit . '</td>
+							<td>' . html_writer::link($urlmanagerestrictions, 'Gerenciar restrições') . '</td>
+							<td>' . html_writer::link($urledit, 'Editar') . '</td>
+							<td>' . html_writer::link($urlremove, 'Remover') . '</td>
+						</tr>';
 			}
 			$url = new moodle_url('/blocks/game_points/addpointsystem.php', array('blockid' => $this->block->instance->id, 'courseid' => $COURSE->id));
 			$html = $html . '</table>' . html_writer::link($url, get_string('addpointsystempage', 'block_game_points'));
@@ -90,12 +114,22 @@ class block_game_points_edit_form extends block_edit_form {
 			
 			$blocks_info = $DB->get_records('block_instances', array('blockname' => 'game_points'));
 			
-			$html = '<table><tr><th>ID</th><th>Acumular pontos de</th><th>Remover</th></tr>';
+			$html = '<table>
+						<tr>
+							<th>ID</th>
+							<th>Acumular pontos de</th>
+							<th>Remover</th>
+						</tr>';
 			foreach($block_links as $value)
 			{
 				$urlremove = new moodle_url('/blocks/game_points/linkdelete.php', array('courseid' => $COURSE->id, 'linkid' => $value->id));
 				$instance = block_instance('game_points', $blocks_info[$value->accfromblockinstanceid]);
-				$html = $html . '<tr><td>' . $value->id . '</td><td>' . $instance->title . '</td><td>' . html_writer::link($urlremove, 'Remover') . '</td></tr>';
+				
+				$html .= '<tr>
+							<td>' . $value->id . '</td>
+							<td>' . $instance->title . '</td>
+							<td>' . html_writer::link($urlremove, 'Remover') . '</td>
+						</tr>';
 			}
 			$url = new moodle_url('/blocks/game_points/linkadd.php', array('blockid' => $this->block->instance->id, 'courseid' => $COURSE->id));
 			$html = $html . '</table>' . html_writer::link($url, get_string('linkaddpage', 'block_game_points'));
@@ -104,6 +138,7 @@ class block_game_points_edit_form extends block_edit_form {
 			$mform->addElement('header', 'configheader', get_string('pointsmanageheading', 'block_game_points'));
 
 			$sql = "SELECT p.id as id,
+						s.name as pointsystemname,
 						p.pointsystemid as pointsystemid,
 						l.userid as userid,
 						s.conditionpoints as event,
@@ -126,6 +161,7 @@ class block_game_points_edit_form extends block_edit_form {
 							<th>' . get_string('pointsmanagepointssystem', 'block_game_points') . '</th>
 							<th>' . get_string('pointsmanagepoints', 'block_game_points') . '</th>
 							<th>' . get_string('pointsmanagedate', 'block_game_points') . '</th>
+							<th>' . get_string('pointsmanageedit', 'block_game_points') . '</th>
 							<th>' . get_string('pointsmanagedelete', 'block_game_points') . '</th>
 						</tr>';
 			foreach($points_logs as $points_log)
@@ -133,14 +169,16 @@ class block_game_points_edit_form extends block_edit_form {
 				$info = $DB->get_record('user', array('id' => $points_log->userid));
                 $name_field = $OUTPUT->user_picture($info, array('size' => 24, 'alttext' => false)) . ' ' . $info->firstname . ' ' . $info->lastname;
 				$eventdescription = empty($points_log->eventdescription) ? $eventsarray[$points_log->event] : $points_log->eventdescription;
+				$edit_url = new moodle_url('/blocks/game_points/pointsedit.php', array('pointslogid' => $points_log->id, 'courseid' => $COURSE->id));
 				$delete_url = new moodle_url('/blocks/game_points/pointsdelete.php', array('pointslogid' => $points_log->id, 'courseid' => $COURSE->id));
 
 				$html .= '<tr>
 							<td>' . $name_field . '</td>
 							<td>' . $eventdescription . '</td>
-							<td>' . $points_log->pointsystemid . '</td>
+							<td>' . (empty($points_log->pointsystemname) ? $points_log->pointsystemid : $points_log->pointsystemname . ' (' . $points_log->pointsystemid . ')') . '</td>
 							<td>' . $points_log->points . '</td>
 							<td>' . date('H:i, d/m/Y', $points_log->timecreated) . '</td>
+							<td>' . html_writer::link($edit_url, get_string('pointsmanageedit', 'block_game_points')) . '</td>
 							<td>' . html_writer::link($delete_url, get_string('pointsmanagedelete', 'block_game_points')) . '</td>
 						</tr>';
 			}

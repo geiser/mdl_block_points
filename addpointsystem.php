@@ -60,6 +60,7 @@ if($addform->is_cancelled())
 else if($data = $addform->get_data())
 {
 	$record = new stdClass();
+	$record->name = empty($data->name) ? null : $data->name;
 	$record->type = $data->type;
 	$record->conditionpoints = $data->event;
 	$record->valuepoints = $data->value;

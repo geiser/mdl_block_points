@@ -34,6 +34,9 @@ class block_game_points_form extends moodleform {
         $mform =& $this->_form;
         $mform->addElement('header','displayinfo', get_string('addpointsystemheading', 'block_game_points'));
 
+		$mform->addElement('text', 'name', 'Nome');
+		$mform->setType('name', PARAM_TEXT);
+
 		$typesarray = array(
 			'random' => 'Randômico',
 			'fixed' => 'Fixo',

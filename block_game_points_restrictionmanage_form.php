@@ -76,16 +76,17 @@ class block_game_points_restrictionmanage_form extends moodleform
 				{
 					$block_id = $DB->get_field('points_system', 'blockinstanceid', array('id' => $restriction->prpointsystemid));
 					$block_info = $DB->get_record('block_instances', array('id' => $block_id));
+				
+					$points_system_name = $DB->get_field('points_system', 'name', array('id' => $restriction->prpointsystemid));
 				}
 				else
 				{
 					$block_info = $DB->get_record('block_instances', array('id' => $restriction->prblockid));
 				}
 				$instance = block_instance('game_points', $block_info);
-				
-				
+
 				$url = new moodle_url('/blocks/game_points/restrictiondelete.php', array('restrictionid' => $restriction->id, 'courseid' => $COURSE->id));
-				$html .= '<tr><td>Os pontos do aluno no' . (isset($restriction->prblockid) ? ' bloco ' . $instance->title  : ' sistema de pontos ' . $restriction->prpointsystemid . ' (bloco ' . $instance->title . ')' ) . ' devem ser ' . $operators_array[$restriction->properator] . ' ' . $restriction->prpoints . ($restriction->properator == BETWEEN ? (' e ' . $restriction->prpointsbetween) : '') . ' pontos' . '</td><td>' . html_writer::link($url, 'Remover') . '</td></tr>';
+				$html .= '<tr><td>Os pontos do aluno no' . (isset($restriction->prblockid) ? ' bloco ' . $instance->title  : ' sistema de pontos ' . (empty($points_system_name) ? $restriction->prpointsystemid : $points_system_name . ' (' . $restriction->prpointsystemid . ')') . ' (bloco ' . $instance->title . ')' ) . ' devem ser ' . $operators_array[$restriction->properator] . ' ' . $restriction->prpoints . ($restriction->properator == BETWEEN ? (' e ' . $restriction->prpointsbetween) : '') . ' pontos' . '</td><td>' . html_writer::link($url, 'Remover') . '</td></tr>';
 			}
 			else if($restriction->type == 1) // Restrição por conteúdo desbloqueado
 			{

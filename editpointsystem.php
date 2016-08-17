@@ -62,20 +62,12 @@ else if($data = $addform->get_data())
 	$oldpointsystem = $DB->get_record('points_system', array('id' => $pointsystemid));
 	
 	$record = new stdClass();
-	$record->id = $oldpointsystem->id;
-	$record->type = $oldpointsystem->type;
-	$record->conditionpoints = $oldpointsystem->conditionpoints;
-	$record->valuepoints = $oldpointsystem->valuepoints;
-	$record->eventdescription = $oldpointsystem->eventdescription;
-	$record->pointslimit = $oldpointsystem->pointslimit;
-	$record->blockinstanceid = $oldpointsystem->blockinstanceid;
-	$record->restrictions = $oldpointsystem->restrictions;
-	$record->groupmode = $oldpointsystem->groupmode;
-	$record->groupingid = $oldpointsystem->groupingid;
+	$record->id = $pointsystemid;
 	$record->deleted = 1;
 	$DB->update_record('points_system', $record);
 	
 	$record = new stdClass();
+	$record->name = empty($data->name) ? null : $data->name;
 	$record->type = $data->type;
 	$record->conditionpoints = $data->event;
 	$record->valuepoints = $data->value;

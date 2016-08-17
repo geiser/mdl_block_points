@@ -74,20 +74,12 @@ class block_game_points_restrictionadd_form extends moodleform
 			
 			$options['block::' . $instance->instance->id] = '- Bloco ' . $instance->title;
 			
-			$sql = 'SELECT id
-						FROM {points_system}
-						WHERE blockinstanceid = :blockinstanceid
-							AND deleted = :deleted';
-							
-			$params['blockinstanceid'] = $instance->instance->id;
-			$params['deleted'] = 0;
-		
-			$point_system_ids = $DB->get_fieldset_sql($sql, $params);
-			foreach($point_system_ids as $point_system_id)
+			$points_systems = $DB->get_records('points_system', array('blockinstanceid' => $instance->instance->id, 'deleted' => 0));
+			foreach($points_systems as $points_system)
 			{
-				if($point_system_id != $this->pointsystemid)
+				if($points_system->id != $this->pointsystemid)
 				{
-					$options['pointsystem::' . $point_system_id] = '&nbsp;&nbsp;&nbsp;&nbsp;Sistema de pontos ' . $point_system_id;
+					$options['pointsystem::' . $points_system->id] = '&nbsp;&nbsp;&nbsp;&nbsp;Sistema de pontos ' . (isset($points_system->name) ? $points_system->name . ' (' . $points_system->id . ')' : $points_system->id);
 				}
 			}
 		}

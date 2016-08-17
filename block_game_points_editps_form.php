@@ -43,6 +43,10 @@ class block_game_points_editps_form extends moodleform {
         $mform =& $this->_form;
         $mform->addElement('header','displayinfo', get_string('editpointsystemheading', 'block_game_points'));
 
+		$mform->addElement('text', 'name', 'Nome');
+		$mform->setType('name', PARAM_TEXT);
+		$mform->setDefault('name', $pointsystem->name);
+
 		$typesarray = array(
 			'random' => 'Randômico',
 			'fixed' => 'Fixo',
