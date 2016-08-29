@@ -47,7 +47,6 @@ function validate_advanced_restrictions($pointsystem, $event)
 		{
 			$sql = str_replace("[" . $property . "]", is_null($value) ? "NULL" : "'" . $value . "'", $sql);
 		}
-		print_object($sql);
 		$count = $DB->count_records_sql($sql);
 
 		if(($restriction->trueif == 0 && $count == 0) || ($restriction->trueif == 1 && $count >= 1)) // If satisfies

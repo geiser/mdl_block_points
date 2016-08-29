@@ -97,8 +97,10 @@ class block_game_points_edit_form extends block_edit_form {
 							<td>' . html_writer::link($urlremove, 'Remover') . '</td>
 						</tr>';
 			}
-			$url = new moodle_url('/blocks/game_points/addpointsystem.php', array('blockid' => $this->block->instance->id, 'courseid' => $COURSE->id));
-			$html = $html . '</table>' . html_writer::link($url, get_string('addpointsystempage', 'block_game_points'));
+			$add_url = new moodle_url('/blocks/game_points/addpointsystem.php', array('blockid' => $this->block->instance->id, 'courseid' => $COURSE->id));
+			$import_url = new moodle_url('/blocks/game_points/import.php', array('blockinstanceid' => $this->block->instance->id, 'courseid' => $COURSE->id));
+			$html .= '</table>' . html_writer::link($add_url, get_string('addpointsystempage', 'block_game_points'));
+			$html .= '<br>' . html_writer::link($import_url, get_string('importheader', 'block_game_points'));
 			$mform->addElement('html', $html);
 			
 			$mform->addElement('header', 'linkheader', get_string('linkeditpage', 'block_game_points'));

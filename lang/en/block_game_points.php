@@ -78,3 +78,7 @@ $string['pointsmanagedelete'] = 'Remover';
 $string['pointseditheading'] = 'Editar pontos';
 $string['pointseditpoints'] = 'Pontos';
 $string['pointseditbutton'] = 'Salvar';
+
+$string['importheader'] = 'Importar sistemas de pontos';
+$string['importfrom'] = 'Importar de';
+$string['importsubmit'] = 'Importar';
