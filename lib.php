@@ -49,7 +49,7 @@ function validate_advanced_restrictions($pointsystem, $event)
 		}
 		$count = $DB->count_records_sql($sql);
 
-		if(($restriction->trueif == 0 && $count == 0) || ($restriction->trueif == 1 && $count >= 1)) // If satisfies
+		if(($restriction->trueif == 0 && $count == 0) || ($restriction->trueif == 1 && $count >= 1) || ($restriction->trueif == 2 && $count >= $restriction->count)) // If satisfies
 		{
 			if($pointsystem->advconnective == OR_CONNECTIVE) // If it uses an OR connective
 			{

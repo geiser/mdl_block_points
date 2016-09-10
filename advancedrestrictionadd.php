@@ -64,6 +64,7 @@ else if($data = $addform->get_data())
 	$record->pointsystemid = $pointsystemid;
 	$record->whereclause = $data->whereclause;
 	$record->trueif = $data->trueif;
+	$record->count = empty($data->count) ? null : $data->count;
 	$DB->insert_record('points_system_advrestriction', $record);
 	
     $url = new moodle_url('/blocks/game_points/restrictionmanage.php', array('courseid' => $courseid, 'pointsystemid' => $pointsystemid));

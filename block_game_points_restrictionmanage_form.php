@@ -136,9 +136,23 @@ class block_game_points_restrictionmanage_form extends moodleform
 		foreach($restrictions as $restriction)
 		{
 			$url = new moodle_url('/blocks/game_points/advancedrestrictiondelete.php', array('restrictionid' => $restriction->id, 'courseid' => $COURSE->id));
+			
+			if($restriction->trueif == 0)
+			{
+				$trueif = get_string('advancedrestrictionaddtrueifzero', 'block_game_points');
+			}
+			else if($restriction->trueif == 1)
+			{
+				$trueif = get_string('advancedrestrictionaddtrueifnotzero', 'block_game_points');
+			}
+			else
+			{
+				$trueif = get_string('advancedrestrictionaddtrueifegthan', 'block_game_points') . ' ' . $restriction->count;
+			}
+			
 			$html .= '<tr>
 					 	<td>' . get_string('advancedrestrictionaddselect', 'block_game_points') . ' ' . $restriction->whereclause . '</td>
-						 <td>' . ($restriction->trueif == 0 ? get_string('advancedrestrictionaddtrueifzero', 'block_game_points') : get_string('advancedrestrictionaddtrueifnotzero', 'block_game_points')) . '</td>
+						 <td>' . $trueif . '</td>
 						<td>' . html_writer::link($url, get_string('restrictionmanagedelete', 'block_game_points')) . '</td>
 					 </tr>';
 		}
