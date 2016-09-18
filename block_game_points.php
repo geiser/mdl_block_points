@@ -56,14 +56,14 @@ class block_game_points extends block_base
 		if(user_has_role_assignment($USER->id, 5)) // Verificar se é estudante? inverter e colcoar contexto pode ser melhor
 		{
 			$showblock = false;
-			if(context::instance_by_id($this->instance->parentcontextid)->contextlevel < $this->page->context->contextlevel && $this->has_points_systems($this->instance->id))
+			/*if(context::instance_by_id($this->instance->parentcontextid)->contextlevel < $this->page->context->contextlevel && $this->has_points_systems($this->instance->id))
 			{
 				$showblock = true;
 			}
 			else if($this->has_points_systems($this->instance->id, true))
 			{
 				$showblock = true;
-			}
+			}*/
 			
 			$eventsarray = null;
 			if($this->page->course->id != 1) // Pagina de curso
@@ -297,9 +297,11 @@ class block_game_points extends block_base
 				}
 			}
 			
+			$points = get_points($this->instance->id, $USER->id);
+			$showblock = $showblock || $points > 0;
 			if($showblock)
 			{
-				$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . get_points($this->instance->id, $USER->id) . '</font></center>';
+				$this->content->text = 'Seus pontos: <br><p align="center"><font size="28">' . $points . '</font></center>';
 				
 				if($this->page->course->id != 1) // Pagina de curso
 				{
