@@ -290,9 +290,13 @@ class block_game_points extends block_base
 					}
 					
 					if(strlen($pointslist) > 0)
-					{
+                    {
 						$this->content->footer = 'Você pode ganhar:<ul>' . $pointslist . '</ul>';
-						$showblock = true;
+                        $showblock = true;
+                        // ugly hack to avoid displaying points that we can win
+                        if ($this->title == 'Pontos no curso') {
+                            $this->content->footer = '';
+                        }
 					}	
 				}
 			}
