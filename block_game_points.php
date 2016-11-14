@@ -363,7 +363,10 @@ class block_game_points extends block_base
         }
 
         //uglyhack to remove what is in parenteses
-		$this->title = preg_replace(array("/\(\w+\)/"), array(""), $this->title);
+        if(user_has_role_assignment($USER->id, 5)) {
+            // Verificar se é estudante? inverter e colcoar contexto pode ser melhor
+            $this->title = preg_replace(array("/\(\w+\)/"), array(""), $this->title);
+        }
 		return $this->content;
     }
 
