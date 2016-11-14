@@ -360,8 +360,10 @@ class block_game_points extends block_base
 		else
 		{
 			$this->content->text = 'Você não é um estudante neste contexto!<br>Seus pontos: <br><p align="center"><font size="28">' . get_points($this->instance->id, $USER->id) . '</font></center>';
-		}
-		
+        }
+
+        //uglyhack to remove what is in parenteses
+		$this->title = preg_replace(array("/\(\w+\)/"), array(""), $this->title);
 		return $this->content;
     }
 
