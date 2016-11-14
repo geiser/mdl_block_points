@@ -59,13 +59,14 @@ class block_game_points_advancedrestrictionadd_form extends moodleform
 		$options = array(
 			0 => get_string('advancedrestrictionaddtrueifzero', 'block_game_points'),
 			1 => get_string('advancedrestrictionaddtrueifnotzero', 'block_game_points'),
-			2 => get_string('advancedrestrictionaddtrueifegthan', 'block_game_points')
+			2 => get_string('advancedrestrictionaddtrueifegthan', 'block_game_points'),
+			3 => get_string('advancedrestrictionaddtrueifeg', 'block_game_points'),
 		);
 		$mform->addElement('select', 'trueif',  get_string('advancedrestrictionaddtrueif', 'block_game_points'), $options, null);
 		$mform->addRule('trueif', null, 'required', null, 'client');
 
 		$mform->addElement('text', 'count',  get_string('advancedrestrictionaddcount', 'block_game_points'));
-		$mform->disabledIf('count', 'trueif', 'neq', 2);
+		//$mform->disabledIf('count', 'trueif', 'in', '2,3');
 
 		$this->add_action_buttons(true, get_string('advancedrestrictionaddbutton', 'block_game_points'));
     }

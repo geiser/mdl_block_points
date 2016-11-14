@@ -62,6 +62,7 @@ $string['advancedrestrictionaddtrueif'] = 'Verdadeiro se';
 $string['advancedrestrictionaddtrueifzero'] = 'COUNT = 0';
 $string['advancedrestrictionaddtrueifnotzero'] = 'COUNT >= 1';
 $string['advancedrestrictionaddtrueifegthan'] = 'COUNT >=';
+$string['advancedrestrictionaddtrueifeg'] = 'COUNT =';
 $string['advancedrestrictionaddcount'] = 'Contagem';
 $string['advancedrestrictiondeleteheading'] = 'Remover restrição';
 $string['advancedrestrictiondeletemessage'] = 'Tem certeza que deseja remover a restrição?';

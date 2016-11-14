@@ -145,9 +145,13 @@ class block_game_points_restrictionmanage_form extends moodleform
 			{
 				$trueif = get_string('advancedrestrictionaddtrueifnotzero', 'block_game_points');
 			}
+            else if($restriction->trueif == 2)
+            {
+				$trueif = get_string('advancedrestrictionaddtrueifegthan', 'block_game_points') . ' ' . $restriction->count;
+            }
 			else
 			{
-				$trueif = get_string('advancedrestrictionaddtrueifegthan', 'block_game_points') . ' ' . $restriction->count;
+				$trueif = get_string('advancedrestrictionaddtrueifeg', 'block_game_points') . ' ' . $restriction->count;
 			}
 			
 			$html .= '<tr>

@@ -55,7 +55,7 @@ class block_game_points_edit_form extends block_edit_form {
 			
 			$eventsarray = get_events_list(true);
 			
-			$sql = "SELECT *
+			$sql = "SELECT s.*
 				FROM {points_system} s
 					INNER JOIN {points_system_processor} p ON s.id = p.pointsystemid
 				WHERE p.processorid = :processorid
