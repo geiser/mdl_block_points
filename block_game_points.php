@@ -52,7 +52,19 @@ class block_game_points extends block_base
 	{
 		global $DB, $USER;
 		$this->content = new stdClass;
-		
+       
+        //uglyhack to hide ranking based on the groupname indicated in the title 
+        $matches = array(); preg_match("/\(\w+\)/", $this->title, $matches);
+        if (user_has_role_assignment($USER->id, 5) && !empty($matches)) {
+            if (!$DB->record_exists_sql('SELECT * FROM {groups_members} m
+                    INNER JOIN {groups} g ON g.id = m.groupid
+                    WHERE g.name = :name AND m.userid = :userid',
+                    array('name'=>substr($matches[0],1,-1),
+                          'userid'=>$USER->id))) {
+                return ;
+            }
+        }
+
 		if(user_has_role_assignment($USER->id, 5)) // Verificar se é estudante? inverter e colcoar contexto pode ser melhor
 		{
 			$showblock = false;
