@@ -51,9 +51,9 @@ class block_game_points extends block_base
     public function get_content()
 	{
 		global $DB, $USER;
-		$this->content = new stdClass;
-       
-        //uglyhack to hide ranking based on the groupname indicated in the title 
+        $this->content = new stdClass;
+
+	    //uglyhack to hide ranking based on the groupname indicated in the title 
         $matches = array(); preg_match("/\(\w+\)/", $this->title, $matches);
         if (user_has_role_assignment($USER->id, 5) && !empty($matches)) {
             if (!$DB->record_exists_sql('SELECT * FROM {groups_members} m
@@ -64,7 +64,7 @@ class block_game_points extends block_base
                 return ;
             }
         }
-
+	
 		if(user_has_role_assignment($USER->id, 5)) // Verificar se é estudante? inverter e colcoar contexto pode ser melhor
 		{
 			$showblock = false;
@@ -302,13 +302,9 @@ class block_game_points extends block_base
 					}
 					
 					if(strlen($pointslist) > 0)
-                    {
+					{
 						$this->content->footer = 'Você pode ganhar:<ul>' . $pointslist . '</ul>';
-                        $showblock = true;
-                        // ugly hack to avoid displaying points that we can win
-                        if ($this->title == 'Pontos no curso') {
-                            $this->content->footer = '';
-                        }
+						$showblock = true;
 					}	
 				}
 			}
@@ -379,6 +375,7 @@ class block_game_points extends block_base
             // Verificar se é estudante? inverter e colcoar contexto pode ser melhor
             $this->title = preg_replace(array("/\(\w+\)/"), array(""), $this->title);
         }
+		
 		return $this->content;
     }
 
