@@ -412,7 +412,7 @@ class block_game_points extends block_base
 		$links = $DB->get_records('points_link', array('blockinstanceid' => $blockinstanceid));
 		foreach($links as $link)
 		{
-			$points_systems += $this->get_points_systems($link->accfromblockinstanceid);
+			//$points_systems += $this->get_points_systems($link->accfromblockinstanceid);
 		}
 
 		return $points_systems;
