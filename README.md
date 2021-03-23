@@ -1,5 +1,4 @@
 # Módulo de bloco para o sistema de pontos (gamificação)
-========================================================
 
 Installation
 ------------
