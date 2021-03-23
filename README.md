@@ -19,5 +19,5 @@ git clone https://github.com/geiser/mdl_block_points.git game_points
 
 - Download this repository
 - Extract the content
-- Put the folder into the folder "game_points" inside the path moodle/blocks
+- Put the files into the folder "game_points" inside the path moodle/blocks
 - Access the notification area in moodle and install
